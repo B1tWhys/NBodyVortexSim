@@ -21,7 +21,7 @@
 unsigned int randomSeed;
 int currentTimestep;
 
-long calculateRadiiIndex(long vortIndex1, long vortIndex2) {
+long calculateVortexRadiiIndex(long vortIndex1, long vortIndex2) {
 	// radii is basically a hash table, with this as the hash function.
 	// I suspect that this is better than the standard dictionary for this.
 	// I'm able to guarentee that the structure is full, and that there are no
@@ -34,9 +34,13 @@ long calculateRadiiIndex(long vortIndex1, long vortIndex2) {
 	}
 }
 
+long calculateTracerRadiiIndex(long tracerIndex, vortIndex) {
+	return vortIndex * NUM_TRACERS + tracerIndex;
+}
+
 #pragma mark - Diff Eq code
 
-// this function is more broke than Greece, so I'm defaulting (heh) over to the pythagorean solver
+// this function doesn't work, so I'm using the pythagorean solver
 void updateRadii_derivative(double *radii, struct Vortex *vortices, int numvortices) {
 	long index;
 	
@@ -58,7 +62,7 @@ void updateRadii_pythagorean(double *radii, struct Vortex *vortices, int numvort
 	
 	for (int i = 0; i < numvortices; ++i) { // if this doesn't segfault it'll be a goddamn miracle
 		for (int j = 0; j < i; ++j) {
-			index = calculateRadiiIndex(vortices[i].vIndex, vortices[j].vIndex);
+			index = calculateVortexRadiiIndex(vortices[i].vIndex, vortices[j].vIndex);
 			
 			radii[index+1] = vortices[i].position[0] - vortices[j].position[0];
 			radii[index+2] = vortices[i].position[1] - vortices[j].position[1];
@@ -73,15 +77,12 @@ double velocityFunc(double vortex2Intensity, double radius) { // calculates velo
 }
 
 void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, struct Vortex *vortices, int numVorts, double *intRads, long numIntRads) {
-	int offset = 0;
-	
 	for (int j = 0; j < numVorts; ++j) {
 		if (vort->vIndex == j) {
-			offset = -1;
 			continue;
 		}
 		
-		long radiiIndex = calculateRadiiIndex(vort->vIndex, vortices[j].vIndex);
+		long radiiIndex = calculateVortexRadiiIndex(vort->vIndex, vortices[j].vIndex);
 		long intRadiiIndex = radiiIndex;
 		
 		for (int domain = 0; domain <= 8; domain++) {
@@ -143,11 +144,67 @@ void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, 
 		if (vort->vIndex > vortices[j].vIndex) {
 			*dxdj = -*dxdj;
 			*dydj = -*dydj;
+}
+	}
+}
+
+void calculateDxDj_DyDj_tracer(double *dxdj, double *dydj, struct Tracer *tracer, struct Tracer *tracers, int numTravers, double *intRads, long numIntRads, struct Vortex *vortices, int numVorts) {
+	for (int vortIndex = 0; vortIndex < numVorts; vortIndex++) {
+		long intRadIndex = calculateTracerRadiiIndex(tracer->tIndex, vortIndex);
+		
+		for (int domain = 0; domain <= 8; domain++) {
+			double rad;
+			double xRad = intRads[intRadIndex + 1], yRad = intRads[intRadIndex + 2];
+			
+			if (domain) {
+				switch (domain) {
+					case 1: {
+						xRad -= DOMAIN_SIZE_X;
+						yRad += DOMAIN_SIZE_Y;
+						break;
+					} case 2: {
+						yRad += DOMAIN_SIZE_Y;
+						break;
+					} case 3: {
+						xRad += DOMAIN_SIZE_X;
+						yRad += DOMAIN_SIZE_Y;
+						break;
+					} case 4: {
+						xRad -= DOMAIN_SIZE_X;
+						break;
+					} case 5: {
+						xRad += DOMAIN_SIZE_X;
+						break;
+					} case 6: {
+						xRad -= DOMAIN_SIZE_X;
+						yRad -= DOMAIN_SIZE_Y;
+						break;
+					} case 7: {
+						yRad += DOMAIN_SIZE_Y;
+						break;
+					} case 8: {
+						xRad += DOMAIN_SIZE_X;
+						yRad -= DOMAIN_SIZE_Y;
+						break;
+					} default: {
+						break;
+					}
+				}
+				rad = sqrt(pow(xRad, 2) + pow(yRad, 2));
+			} else {
+				rad = intRads[intRadIndex];
+			}
+			
+			if (rad > DOMAIN_SIZE_X) continue;
+			
+			double vmag = velocityFunc(vortices[vortIndex].intensity, rad);
+			*dxdj +=  (yRad/rad) * TIMESTEP * vmag;
+			*dydj += (-xRad/rad) * TIMESTEP * vmag;
 		}
 	}
 }
 
-void stepForward_RK4(struct Vortex *vortices, double *radii, int numVortices) {
+void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices, double *tracerRadii, struct Tracer *tracers, int numTracers) {
 	/*
 	 its so inefficient     ୧(ಠ Д ಠ)୨
 	 
@@ -161,8 +218,14 @@ void stepForward_RK4(struct Vortex *vortices, double *radii, int numVortices) {
 	
 	int sizeOfRadEntry = sizeof(double) * 3;
 	long intermediateRadLength = (pow((long)numVortices, 2) - numVortices) * sizeOfRadEntry;
-	double *intermediateRads = malloc(intermediateRadLength);
-	memcpy(intermediateRads, radii, intermediateRadLength);
+	double *intermediateVortRads = malloc(intermediateRadLength);
+	memcpy(intermediateVortRads, vortRadii, intermediateRadLength);
+	
+	long intermediateTracerRadLength = numVortices * numTracers * sizeOfRadEntry;
+	double *intermediateTracerRads = malloc(intermediateRadLength);
+	memcpy(intermediateTracerRads, tracerRadii, intermediateTracerRadLength);
+	
+	long intermedateTracerRadLength = numTracers * numVortices * sizeOfRadEntry;
 	
 	for (int i = 0; i < numVortices; ++i) {
 		struct Vortex *vort = &vortices[i];
@@ -174,11 +237,11 @@ void stepForward_RK4(struct Vortex *vortices, double *radii, int numVortices) {
 	for (int RKStep = 1; RKStep <= 4; RKStep++) { // NOTE: this adds a const (not an order) to the big-O of the alg
 		double dxdj = 0, dydj = 0;
 		
-		for (int i = 0; i < numVortices; ++i) {
+		for (int originVortIndex = 0; originVortIndex < numVortices; ++originVortIndex) {
 			double k1_x = 0, k2_x = 0, k3_x = 0, k4_x = 0;
 			double k1_y = 0, k2_y = 0, k3_y = 0, k4_y = 0;
 			
-			struct Vortex *vort = &vortices[i];
+			struct Vortex *vort = &vortices[originVortIndex];
 			int vortIndex = vort->vIndex;
 
 			int offset = 0; // neccessary for skipping over the self<->self radius in the vortices array
@@ -186,15 +249,15 @@ void stepForward_RK4(struct Vortex *vortices, double *radii, int numVortices) {
 			dxdj = 0;
 			dydj = 0;
 			
-			calculateDxDj_DyDj_vortex(&dxdj, &dydj, vort, vortices, numVortices, intermediateRads, numVortices);
+			calculateDxDj_DyDj_vortex(&dxdj, &dydj, vort, vortices, numVortices, intermediateVortRads, numVortices);
 			
 			for (int j = 0; j < numVortices; ++j) {
-				if (i == j) {
+				if (originVortIndex == j) {
 					offset = -1;
 					continue;
 				}
 				
-				long radiiIndex = calculateRadiiIndex(vortIndex, vortices[j].vIndex);
+				long radiiIndex = calculateVortexRadiiIndex(vortIndex, vortices[j].vIndex);
 				long intRadiiIndex = radiiIndex;
 				
 				switch (RKStep) {
@@ -229,20 +292,87 @@ void stepForward_RK4(struct Vortex *vortices, double *radii, int numVortices) {
 						break;
 				}
 				
-				// perhaps an optimization can be made where we do a lazy kind of copy of radii into intermediateRads,
+				// perhaps an optimization can be made where we do some kind of lazy copy of radii into intermediateRads,
 				// initially making intermediate Rads only a pointer to radii, then doing the copy here in RK step 1.
 				// This would save 1 large matrix operation.
 				
-				intermediateRads[intRadiiIndex+1] = radii[radiiIndex + 1] + dxdj;
-				intermediateRads[intRadiiIndex+2] = radii[radiiIndex + 2] + dydj;
+				intermediateVortRads[intRadiiIndex+1] = vortRadii[radiiIndex + 1] + dxdj;
+				intermediateVortRads[intRadiiIndex+2] = vortRadii[radiiIndex + 2] + dydj;
 				
 				// pythagorean.
-				intermediateRads[intRadiiIndex] = sqrt(pow(intermediateRads[intRadiiIndex+1], 2) + pow(intermediateRads[intRadiiIndex+2], 2));
+				intermediateVortRads[intRadiiIndex] = sqrt(pow(intermediateVortRads[intRadiiIndex+1], 2) + pow(intermediateVortRads[intRadiiIndex+2], 2));
 			}
 			vort->velocity[0] += (k1_x + k2_x * 2 + k3_x * 2 + k4_x)/6;
 			vort->velocity[1] += (k1_y + k2_y * 2 + k3_y * 2 + k4_y)/6;
+		}
+		
+		for (int tracerIndex = 0; tracerIndex < numTracers; ++tracerIndex) {
+			double k1_x = 0, k2_x = 0, k3_x = 0, k4_x = 0;
+			double k1_y = 0, k2_y = 0, k3_y = 0, k4_y = 0;
 			
+			struct Tracer *tracer = &tracers[tracerIndex];
+			int tracerIndex = tracer->tIndex;
 			
+			dxdj = 0;
+			dydj = 0;
+			
+			calculateDxDj_DyDj_tracer(&dxdj,
+									  &dydj,
+									  tracer,
+									  tracers,
+									  numTracers,
+									  intermediateTracerRads,
+									  (numVortices * numTracers),
+									  vortices,
+									  numVortices);
+			
+			for (int vortexIndex = 0; vortexIndex < numVortices; ++vortexIndex) {
+				long radIndex = (long)tracerIndex * (long)vortexIndex;
+				
+				switch (RKStep) {
+					case 1: {
+						k1_x += dxdj;
+						k1_y += dydj;
+						
+						dxdj = dxdj/2;
+						dydj = dydj/2;
+						break;
+					}
+					case 2: {
+						k2_x += dxdj;
+						k2_y += dydj;
+						
+						dxdj = dxdj/2;
+						dydj = dydj/2;
+						break;
+					}
+					case 3: {
+						k3_x += dxdj;
+						k3_y += dydj;
+						
+						break;
+					}
+					case 4: {
+						k4_x += dxdj;
+						k4_y += dydj;
+						break;
+					}
+					default:
+						break;
+				}
+				
+				// perhaps an optimization can be made where we do some kind of lazy copy of radii into intermediateRads,
+				// initially making intermediate Rads only a pointer to radii, then doing the copy here in RK step 1.
+				// This would save 1 large matrix operation.
+				
+				intermediateVortRads[radIndex+1] = vortRadii[radIndex + 1] + dxdj;
+				intermediateVortRads[radIndex+2] = vortRadii[radIndex + 2] + dydj;
+				
+				// pythagorean.
+				intermediateVortRads[radIndex] = sqrt(pow(intermediateVortRads[radIndex+1], 2) + pow(intermediateVortRads[radIndex+2], 2));
+			}
+			tracer->velocity[0] += (k1_x + k2_x * 2 + k3_x * 2 + k4_x)/6;
+			tracer->velocity[1] += (k1_y + k2_y * 2 + k3_y * 2 + k4_y)/6;
 		}
 	}
 	
@@ -251,8 +381,14 @@ void stepForward_RK4(struct Vortex *vortices, double *radii, int numVortices) {
 		vort->position[0] += vort->velocity[0];
 		vort->position[1] += vort->velocity[1];
 	}
+
+	for (int i = 0; i < numTracers; ++i) {
+		struct Tracer *tracer = &tracers[i];
+		tracer->position[0] += tracer->velocity[0];
+		tracer->position[1] += tracer->velocity[1];
+	}
 	
-	free(intermediateRads);
+	free(intermediateVortRads);
 }
 
 double generateRandInRange(double lowerBound, double upperBound) { // range is inclusive on both ends
@@ -462,9 +598,9 @@ int main(int argc, const char * argv[]) {
 	// r, r_x, r_y
 	
 //	int radiiLen = sizeof(double) * (pow(vorticesAllocated, 2) - vorticesAllocated);
-	unsigned long radiiLen = sizeof(double) * (calculateRadiiIndex(vorticesAllocated-1, vorticesAllocated-2) + 1);
+	unsigned long vortexRadiiLen = sizeof(double) * (calculateVortexRadiiIndex(vorticesAllocated-1, vorticesAllocated-2) + 1);
 
-	double *vortexRadii = malloc(radiiLen);
+	double *vortexRadii = malloc(vortexRadiiLen);
 //	double *radii = calloc(sizeof(double), pow(vorticesAllocated, 2) - vorticesAllocated);
 	
 	// calculate the radii for the first timestep. Update radii above only works after velocities are calculated, which we can't do until radii are calculated for the first time.
@@ -472,7 +608,7 @@ int main(int argc, const char * argv[]) {
 	long index;
 	for (int i = 0; i < activeDriverVortices; ++i) {
 		for (int j = 0; j < i; ++j) {
-			index = calculateRadiiIndex(vortices[i].vIndex, vortices[j].vIndex);
+			index = calculateVortexRadiiIndex(vortices[i].vIndex, vortices[j].vIndex);
 			vortexRadii[index+1] = vortices[i].position[0] - vortices[j].position[0];
 			vortexRadii[index+2] = vortices[i].position[1] - vortices[j].position[1];
 			vortexRadii[index] = sqrt(pow(vortexRadii[index+1], 2) + pow(vortexRadii[index+2], 2));
@@ -485,16 +621,26 @@ int main(int argc, const char * argv[]) {
 	
 	// tracers is the arary of Tracer structs
 	struct Tracer *tracers = malloc(sizeof(struct Tracer) * NUM_TRACERS);
-	double *tracerRadii = malloc(<#size_t __size#>)
+	long tracerRadLength = NUM_TRACERS * vorticesAllocated * sizeof(double) * 3;
+	double *tracerRadii = malloc(tracerRadLength); // row = vortex, col = tracer; Note: vortPos - tracerPos
 	
+	for (int tracerIndex = 0; tracerIndex < NUM_TRACERS; tracerIndex++) {
+		for (int vortIndex = 0; vortIndex < activeDriverVortices; vortIndex++) {
+			long radIndex = calculateTracerRadiiIndex(tracerIndex, vortIndex);
+			tracerRadii[radIndex+1] = vortices[vortIndex].position[0] - tracers[tracerIndex].position[0];
+			tracerRadii[radIndex+2] = vortices[vortIndex].position[1] - tracers[tracerIndex].position[1];
+			tracerRadii[radIndex] = sqrt(pow(tracerRadii[radIndex+1], 2) + pow(tracerRadii[radIndex+2], 2));
+		}
+	}
 	
-						/******************* main loop *******************/
+	/******************* main loop *******************/
 	
 	while (NUMBER_OF_STEPS == 0 || currentTimestep < NUMBER_OF_STEPS) {
 		struct timespec startTime;
 		clock_gettime(CLOCK_MONOTONIC, &startTime);
 		
-		stepForward_RK4(vortices, vortexRadii, activeDriverVortices);
+		stepForward_RK4(vortices, vortexRadii, activeDriverVortices, tracerRadii, tracers, NUM_TRACERS);
+		
 		updateRadii_pythagorean(vortexRadii, vortices, activeDriverVortices);
 		loopVorts(vortices, activeDriverVortices);
 	
