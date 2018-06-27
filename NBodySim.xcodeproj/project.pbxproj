@@ -295,24 +295,16 @@
 		D46B168C20D0A2E800E623FC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4D9GX636ZZ;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				"OTHER_CFLAGS[arch=*]" = (
-					"-DXCODE",
-					"-DNUMBER_OF_STEPS=20",
-				);
-				OTHER_CPLUSPLUSFLAGS = "";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = NBodySim;
 			};
 			name = Debug;
 		};
 		D46B168D20D0A2E800E623FC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4D9GX636ZZ;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = NBodySim;
 			};
 			name = Release;
 		};
