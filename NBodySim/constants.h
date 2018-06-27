@@ -12,7 +12,7 @@
 /*
  -DNUMBER_OF_STEPS=0
  -DXCODE
- 
+
  num:	test case				(val for NUM_VORT_INIT)
  0:		normal mode				any integer
  1:		two co-orbiting vorts	(2)
@@ -22,12 +22,10 @@
 #define TEST_CASE 1
 
 #if !defined(CONSOLE_H) || !defined(CONSOLE_W)
-#define CONSOLE_W 150 // character dimensions to draw to console
-#define CONSOLE_H 75
-#endif
-
 #define CONSOLE_W 100 // character dimensions to draw to console
 #define CONSOLE_H 50
+#endif
+
 #define WINDOW_W 1000 // px dimentions for output window (not implemented yet)
 #define WINDOW_H 1000
 #define IMAGE_W 1000 // size of output images (also not implemented yet)
@@ -37,7 +35,7 @@
 #define DOMAIN_SIZE_Y 64
 
 #define TIMESTEP .1
-#define RENDER_NTH_STEP 10 // speeds up the simulation display
+#define RENDER_NTH_STEP 30 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS // don't change this line
 #define NUMBER_OF_STEPS 0 // number of time steps to simulate. 10 to loop forever
 #endif // ignore this line too

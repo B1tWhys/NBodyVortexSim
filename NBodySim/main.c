@@ -235,9 +235,6 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 
 
 	for (int RKStep = 1; RKStep <= 4; RKStep++) { // NOTE: this adds a const (not an order) to the big-O of the alg
-=======
-	
-	for (int RKStep = 1; RKStep <= 8; RKStep++) { // NOTE: this adds a const (not an order) to the big-O of the alg
 		double dxdj = 0, dydj = 0;
 
 		for (int originVortIndex = 0; originVortIndex < numVortices; ++originVortIndex) {
@@ -249,9 +246,6 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 
 			int offset = 0; // neccessary for skipping over the self<->self radius in the vortices array
 
-=======
-			int offset = 0; // neccessary for skipping over the self<->self radius in the vortices array // is it really though? // yes, yes it really is.
-			
 			dxdj = 0;
 			dydj = 0;
 
@@ -552,7 +546,7 @@ void initialize_tracers(struct Tracer *tracers, int n) {
 #pragma mark - UI/Output code
 
 void drawToConsole(struct Vortex *vorts, int n) {
-	printf("\033[3J]");
+	printf("\033[2J");
 	int pxArray[CONSOLE_W][CONSOLE_H];
 
 	for (int y = 0; y < CONSOLE_H; y++) {
@@ -651,7 +645,7 @@ int main(int argc, const char * argv[]) {
 		updateRadii_pythagorean(vortexRadii, vortices, activeDriverVortices);
 		loopVorts(vortices, activeDriverVortices);
 
-#ifdef XCODE
+#ifdef DEBUG
 		printf("Step number %i\n", currentTimestep);
 		if (NUMBER_OF_STEPS != 0 && !(currentTimestep%(NUMBER_OF_STEPS/20))) {
 			printf("-----------\n");
@@ -678,4 +672,3 @@ int main(int argc, const char * argv[]) {
 		currentTimestep++;
 	}
 }
-
