@@ -34,11 +34,7 @@ long calculateVortexRadiiIndex(long vortIndex1, long vortIndex2) {
 	}
 }
 
-<<<<<<< HEAD
 long calculateTracerRadiiIndex(long tracerIndex, long vortIndex) {
-=======
-long calculateTracerRadiiIndex(long tracerIndex, int vortIndex) {
->>>>>>> 22465e0a99dc6f81b78aa0a6d6c6c784efc6144e
 	return vortIndex * NUM_TRACERS + tracerIndex;
 }
 
@@ -210,11 +206,8 @@ void calculateDxDj_DyDj_tracer(double *dxdj, double *dydj, struct Tracer *tracer
 
 void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices, double *tracerRadii, struct Tracer *tracers, int numTracers) {
 	/*
-<<<<<<< HEAD
 	 its so inefficient     ୧(ಠ Д ಠ)୨
 
-=======
->>>>>>> 22465e0a99dc6f81b78aa0a6d6c6c784efc6144e
 	 // this algorithm ends up making 2 coppies of each radius. One in each direction.
 	 // TODO: I think I really want to just copy the whole damn radius matrix
 
@@ -239,14 +232,12 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 		vort->velocity[0] = 0;
 		vort->velocity[1] = 0;
 	}
-<<<<<<< HEAD
 
 
 	for (int RKStep = 1; RKStep <= 4; RKStep++) { // NOTE: this adds a const (not an order) to the big-O of the alg
 =======
 	
 	for (int RKStep = 1; RKStep <= 8; RKStep++) { // NOTE: this adds a const (not an order) to the big-O of the alg
->>>>>>> 22465e0a99dc6f81b78aa0a6d6c6c784efc6144e
 		double dxdj = 0, dydj = 0;
 
 		for (int originVortIndex = 0; originVortIndex < numVortices; ++originVortIndex) {
@@ -256,13 +247,11 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 			struct Vortex *vort = &vortices[originVortIndex];
 			int vortIndex = vort->vIndex;
 
-<<<<<<< HEAD
 			int offset = 0; // neccessary for skipping over the self<->self radius in the vortices array
 
 =======
 			int offset = 0; // neccessary for skipping over the self<->self radius in the vortices array // is it really though? // yes, yes it really is.
 			
->>>>>>> 22465e0a99dc6f81b78aa0a6d6c6c784efc6144e
 			dxdj = 0;
 			dydj = 0;
 
@@ -668,10 +657,7 @@ int main(int argc, const char * argv[]) {
 			printf("-----------\n");
 			for (int ind = 0; ind < activeDriverVortices; ind += 1000) printf("%i	|	%1.5f	|	%1.5f	|	%1.5f\n", ind, vortices[ind].velocity[0], vortices[ind].velocity[1], sqrt(pow(vortices[ind].velocity[0], 2) + pow(vortices[ind].velocity[1], 2)));
 
-<<<<<<< HEAD
 			printf("Step number %i\n", currentTimestep);
-=======
->>>>>>> 22465e0a99dc6f81b78aa0a6d6c6c784efc6144e
 			struct timespec endTime;
 			clock_gettime(CLOCK_MONOTONIC, &endTime);
 			double sec = (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
