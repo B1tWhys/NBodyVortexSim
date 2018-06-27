@@ -10,6 +10,9 @@
 #define constants_h
 
 /*
+ -DNUMBER_OF_STEPS=0
+ -DXCODE
+ 
  num:	test case				(val for NUM_VORT_INIT)
  0:		normal mode				any integer
  1:		two co-orbiting vorts	(2)
@@ -18,11 +21,16 @@
  */
 #define TEST_CASE 1
 
+<<<<<<< HEAD
 #if !defined(CONSOLE_H) || !defined(CONSOLE_W)
 #define CONSOLE_W 150 // character dimensions to draw to console
 #define CONSOLE_H 75
 #endif
 
+=======
+#define CONSOLE_W 100 // character dimensions to draw to console
+#define CONSOLE_H 50
+>>>>>>> 22465e0a99dc6f81b78aa0a6d6c6c784efc6144e
 #define WINDOW_W 1000 // px dimentions for output window (not implemented yet)
 #define WINDOW_H 1000
 #define IMAGE_W 1000 // size of output images (also not implemented yet)
