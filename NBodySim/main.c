@@ -62,18 +62,29 @@ void updateRadii_derivative(double *radii, struct Vortex *vortices, int numvorti
 	}
 }
 
-// This works reliably but it *may* be *very slightly* slower
-void updateRadii_pythagorean(double *radii, struct Vortex *vortices, int numvortices) {
+// This works reliably but it *may* be *very slightly* slower, and may also be completely redundant b/c of the RK4 function
+void updateRadii_pythagorean(double *vortexRadii, struct Vortex *vortices, int numVortices, double *tracerRadii, struct Tracer *tracers, int numTracers) {
 	long index;
 	
-	for (int i = 0; i < numvortices; ++i) { // if this doesn't segfault it'll be a goddamn miracle
+	for (int i = 0; i < numVortices; ++i) { // if this doesn't segfault it'll be a goddamn miracle
 		for (int j = 0; j < i; ++j) {
 			index = calculateVortexRadiiIndex(vortices[i].vIndex, vortices[j].vIndex);
 
-			radii[index+1] = vortices[i].position[0] - vortices[j].position[0];
-			radii[index+2] = vortices[i].position[1] - vortices[j].position[1];
-			radii[index] = sqrt(pow(radii[index+1], 2) + pow(radii[index+2], 2));
-			++index;
+			vortexRadii[index+1] = vortices[i].position[0] - vortices[j].position[0];
+			vortexRadii[index+2] = vortices[i].position[1] - vortices[j].position[1];
+			vortexRadii[index] = sqrt(pow(vortexRadii[index+1], 2) + pow(vortexRadii[index+2], 2));
+		}
+	}
+	index = 0;
+	for (int tracerIndex = 0; tracerIndex < numTracers; tracerIndex++) {
+		struct Tracer *tracer = &tracers[tracerIndex];
+		for (int vortIndex = 0; vortIndex < numVortices; vortIndex++) {
+			struct Vortex *vort = &vortices[vortIndex];
+			index = calculateTracerRadiiIndex(tracerIndex, vortIndex);
+
+			tracerRadii[index+1] = vort->position[0] - tracer->position[0];
+			tracerRadii[index+2] = vort->position[1] - tracer->position[1];
+			tracerRadii[index] = sqrt(pow(tracerRadii[index+1], 2) + pow(tracerRadii[index+2], 2));
 		}
 	}
 }
@@ -91,7 +102,7 @@ void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, 
 		long radiiIndex = calculateVortexRadiiIndex(vort->vIndex, vortices[j].vIndex);
 		long intRadiiIndex = radiiIndex;
 
-		for (int domain = 0; domain <= 8; domain++) {
+		for (int domain = 0; domain <= 0; domain++) {
 			double rad;
 			double xRad = (vort->vIndex < vortices[j].vIndex) ? intRads[intRadiiIndex + 1] : -intRads[intRadiiIndex + 1];
 			double yRad = (vort->vIndex < vortices[j].vIndex) ? intRads[intRadiiIndex + 2] : -intRads[intRadiiIndex + 2];
@@ -141,17 +152,6 @@ void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, 
 			*dxdj +=  (yRad/rad) * TIMESTEP * vmag;
 			*dydj += (-xRad/rad) * TIMESTEP * vmag;
 		}
-
-		/*
-		 We only store the x and y distances between each pair of vorts once per pair, so if this calculation is being done
-		 backwards (we stored the radii for a->b but we're solving the influence of a->b) then the distance components are
-		 the negative of what we want (we want b.x-a.x but what we've got is a.x-b.x). Whether its forward/backward depends on
-		 the vIndex of each one.
-		 */
-//		if (vort->vIndex > vortices[j].vIndex) {
-//			*dxdj = -*dxdj;
-//			*dydj = -*dydj;
-//		}
 	}
 }
 
@@ -232,14 +232,20 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 	double *intermediateTracerRads = malloc(intermediateTracerRadSize);
 	memcpy(intermediateTracerRads, tracerRadii, intermediateTracerRadSize);
 	
-	for (int i = 0; i < numVortices; ++i) {
+	for (int i = 0; i < numVortices; i++) {
 		struct Vortex *vort = &vortices[i];
 		vort->velocity[0] = 0;
 		vort->velocity[1] = 0;
 	}
+	
+	for (int i = 0; i < numTracers; i++) {
+		struct Tracer *tracer = &tracers[i];
+		tracer->velocity[0] = 0;
+		tracer->velocity[1] = 0;
+	}
 
 
-	for (int RKStep = 1; RKStep <= 4; RKStep++) { // NOTE: this adds a const (not an order) to the big-O of the alg
+	for (int RKStep = 1; RKStep <= 4; RKStep++) {
 		double dxdj = 0, dydj = 0;
 
 		for (int originVortIndex = 0; originVortIndex < numVortices; ++originVortIndex) {
@@ -377,7 +383,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 				intermediateTracerRads[radIndex] = sqrt(pow(intermediateTracerRads[radIndex+1], 2) + pow(intermediateTracerRads[radIndex+2], 2));
 			}
 			tracer->velocity[0] += (k1_x + k2_x * 2 + k3_x * 2 + k4_x)/6;
-			tracer->velocity[1] += (k1_y + k2_y * 2 + k3_y * 2 + k4_y)/6;
+			tracer->velocity[1] += (k1_y + k2_y * 2. + k3_y * 2. + k4_y)/6.;
 		}
 	}
 
@@ -692,19 +698,20 @@ int main(int argc, const char * argv[]) {
 		clock_gettime(CLOCK_MONOTONIC, &startTime);
 		
 		stepForward_RK4(vortices, vortexRadii, activeDriverVortices, tracerRadii, tracers, NUM_TRACERS);
-		updateRadii_pythagorean(vortexRadii, vortices, activeDriverVortices); // needs optimization. Repeat ops from stepForward_RK4
+		updateRadii_pythagorean(vortexRadii, vortices, activeDriverVortices, tracerRadii, tracers, NUM_TRACERS); // needs optimization. Repeat ops from stepForward_RK4
 		wrapPositions(vortices, activeDriverVortices, tracers, NUM_TRACERS);
 		double minR = minRad(vortexRadii, activeDriverVortices);
 #ifdef DEBUG
 		printf("Step number %i\n", currentTimestep);
 		printf("Current min r: %f\n", minR);
-		if (NUMBER_OF_STEPS != 0 && !(currentTimestep%(NUMBER_OF_STEPS/20))) {
+//		if (NUMBER_OF_STEPS != 0 && !(currentTimestep%(NUMBER_OF_STEPS/20))) {
+		if (1) {
 			printf("-----------\n");
-			for (int ind = 0; ind < activeDriverVortices; ind += 1000) printf("%i	|	%1.5f	|	%1.5f	|	%1.5f\n",
+			for (int ind = 0; ind < NUM_TRACERS; ind += 1000) printf("%i	|	%1.5f	|	%1.5f	|	%1.5f\n",
 																			  ind,
-																			  vortices[ind].velocity[0],
-																			  vortices[ind].velocity[1],
-																			  sqrt(pow(vortices[ind].velocity[0], 2) + pow(vortices[ind].velocity[1], 2)));
+																			  tracers[ind].velocity[0],
+																			  tracers[ind].velocity[1],
+																			  sqrt(pow(tracers[ind].velocity[0], 2) + pow(tracers[ind].velocity[1], 2)));
 
 			printf("Step number %i\n", currentTimestep);
 			struct timespec endTime;
@@ -729,3 +736,13 @@ int main(int argc, const char * argv[]) {
 	
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
