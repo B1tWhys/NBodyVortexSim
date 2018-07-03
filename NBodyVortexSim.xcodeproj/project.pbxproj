@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		D4CCD22020EBB2C20059D986 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD20520EBB2480059D986 /* main.c */; };
 		D4CCD22120EBB32E0059D986 /* guiOutput.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD20320EBB2480059D986 /* guiOutput.c */; };
+		D4E3FF7D20EBB67A00B4A0EA /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD1FF20EBB2480059D986 /* main.c */; };
+		D4E3FF8020EBB71200B4A0EA /* libcairo.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D4E3FF7F20EBB71200B4A0EA /* libcairo.2.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -21,10 +23,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		D4E3FF7420EBB65400B4A0EA /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		D4CCD1FE20EBB2480059D986 /* a.out */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = a.out; sourceTree = "<group>"; };
 		D4CCD1FF20EBB2480059D986 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		D4CCD20120EBB2480059D986 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		D4CCD20320EBB2480059D986 /* guiOutput.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = guiOutput.c; sourceTree = "<group>"; };
@@ -32,10 +42,20 @@
 		D4CCD20520EBB2480059D986 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		D4CCD20620EBB2480059D986 /* guiOutput.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = guiOutput.h; sourceTree = "<group>"; };
 		D4CCD21920EBB2B40059D986 /* NBodySim */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = NBodySim; sourceTree = BUILT_PRODUCTS_DIR; };
+		D4E3FF7620EBB65400B4A0EA /* TestCPlayground */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TestCPlayground; sourceTree = BUILT_PRODUCTS_DIR; };
+		D4E3FF7F20EBB71200B4A0EA /* libcairo.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcairo.2.dylib; path = ../../../../opt/X11/lib/libcairo.2.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		D4CCD21620EBB2B40059D986 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D4E3FF8020EBB71200B4A0EA /* libcairo.2.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D4E3FF7320EBB65400B4A0EA /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -48,7 +68,6 @@
 		D4CCD1FD20EBB2480059D986 /* TestCPlayground */ = {
 			isa = PBXGroup;
 			children = (
-				D4CCD1FE20EBB2480059D986 /* a.out */,
 				D4CCD1FF20EBB2480059D986 /* main.c */,
 			);
 			path = TestCPlayground;
@@ -70,6 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				D4CCD21920EBB2B40059D986 /* NBodySim */,
+				D4E3FF7620EBB65400B4A0EA /* TestCPlayground */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -80,7 +100,16 @@
 				D4CCD20020EBB2480059D986 /* NBodySim */,
 				D4CCD1FD20EBB2480059D986 /* TestCPlayground */,
 				D4CCD20E20EBB2720059D986 /* Products */,
+				D4E3FF7E20EBB71100B4A0EA /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		D4E3FF7E20EBB71100B4A0EA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D4E3FF7F20EBB71200B4A0EA /* libcairo.2.dylib */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -103,6 +132,23 @@
 			productReference = D4CCD21920EBB2B40059D986 /* NBodySim */;
 			productType = "com.apple.product-type.tool";
 		};
+		D4E3FF7520EBB65400B4A0EA /* TestCPlayground */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D4E3FF7C20EBB65400B4A0EA /* Build configuration list for PBXNativeTarget "TestCPlayground" */;
+			buildPhases = (
+				D4E3FF7220EBB65400B4A0EA /* Sources */,
+				D4E3FF7320EBB65400B4A0EA /* Frameworks */,
+				D4E3FF7420EBB65400B4A0EA /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TestCPlayground;
+			productName = TestCPlayground;
+			productReference = D4E3FF7620EBB65400B4A0EA /* TestCPlayground */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -113,6 +159,10 @@
 				TargetAttributes = {
 					D4CCD21820EBB2B40059D986 = {
 						CreatedOnToolsVersion = 10.0;
+						ProvisioningStyle = Automatic;
+					};
+					D4E3FF7520EBB65400B4A0EA = {
+						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -130,6 +180,7 @@
 			projectRoot = "";
 			targets = (
 				D4CCD21820EBB2B40059D986 /* NBodySim */,
+				D4E3FF7520EBB65400B4A0EA /* TestCPlayground */,
 			);
 		};
 /* End PBXProject section */
@@ -141,6 +192,14 @@
 			files = (
 				D4CCD22120EBB32E0059D986 /* guiOutput.c in Sources */,
 				D4CCD22020EBB2C20059D986 /* main.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D4E3FF7220EBB65400B4A0EA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D4E3FF7D20EBB67A00B4A0EA /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -200,6 +259,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /opt/X11/include/cairo;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/lib,
+					/opt/X11/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				ONLY_ACTIVE_ARCH = YES;
@@ -255,6 +319,11 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /opt/X11/include/cairo;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/lib,
+					/opt/X11/lib,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -271,6 +340,115 @@
 		D4E3FF7120EBB20B00B4A0EA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+			};
+			name = Release;
+		};
+		D4E3FF7A20EBB65400B4A0EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 4D9GX636ZZ;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		D4E3FF7B20EBB65400B4A0EA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 4D9GX636ZZ;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
@@ -291,6 +469,15 @@
 			buildConfigurations = (
 				D4E3FF7020EBB20B00B4A0EA /* Debug */,
 				D4E3FF7120EBB20B00B4A0EA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D4E3FF7C20EBB65400B4A0EA /* Build configuration list for PBXNativeTarget "TestCPlayground" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D4E3FF7A20EBB65400B4A0EA /* Debug */,
+				D4E3FF7B20EBB65400B4A0EA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
