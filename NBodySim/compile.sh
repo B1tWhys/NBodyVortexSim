@@ -13,7 +13,13 @@ fi
 
 echo "Will draw to conole at ${drawWidth}x$drawHeight character resolution"
 
-args="-lm -std=gnu11 -DCONSOLE_W=$drawWidth -DCONSOLE_H=$drawHeight -I /usr/include/cairo -L /usr/lib -l cairo"
+args="-lm -std=gnu11 -DCONSOLE_W=$drawWidth -DCONSOLE_H=$drawHeight"
+
+if [ `uname` = "Darwin" ]; then
+	args+=" -I /opt/X11/include/cairo -L /usr/lib -l cairo"
+else
+	args+=" -I /usr/include/cairo -L /usr/lib -l cairo"
+fi
 
 if [ -z "${debug+x}" ]; then debug="false"; fi
 
@@ -25,8 +31,8 @@ else
 	# args="$args -O3"
 fi
 
-echo "Complete compilation args are: $args"
-
-gcc ./main.c ./guiOutput.c -o ./simulator $args
+command="gcc ./main.c ./guiOutput.c -o ./simulator $args"
+echo "Full compilation instruction is: $command"
+eval "$command"
 
 printf "Compilation complete\n\n\n"

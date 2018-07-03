@@ -2,11 +2,26 @@
 #include "constants.h"
 #include "main.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <cairo.h>
+#include <string.h>
 
 
-void drawToConsole(struct Vortex *vorts, int numVorts, struct Tracer *tracers, char filename[]) {
+void genFName(char *strBuffer, int frameNum) {
+	strcpy(strBuffer, "./outputImages/frame_");
+	char buffer[9];
+	sprintf(buffer, "%i", frameNum);
+	
+	for (int i = 9-(int)strlen(buffer); i >= 0; i--) {
+		strcat(strBuffer, "0");
+	}
+	strcat(strBuffer, buffer);
+	strcat(strBuffer, ".png");
+}
+
+
+void drawToConsole(struct Vortex *vorts, int numVorts, struct Tracer *tracers) {
 	printf("\033[3J");
 	int pxArray[CONSOLE_W][CONSOLE_H];
 
@@ -55,23 +70,47 @@ void drawToConsole(struct Vortex *vorts, int numVorts, struct Tracer *tracers, c
 	}
 }
 
-void drawToFile(struct Vortex *vorts, int numVorts, struct Tracer *tracers) {
+void drawToFile(struct Vortex *vorts, int numVorts, struct Tracer *tracers, char filename[]) {
 	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, IMAGE_W, IMAGE_H);
 	cairo_t *cr = cairo_create(surface);
+	
+	cairo_scale(cr, 1, -1);
+	cairo_translate(cr, 0, -cairo_image_surface_get_height(surface));
 
-	for (vortIndex = 0; vortIndex < numVorts; vortIndex++) {
+	cairo_set_source_rgb(cr, 1 ,0, 0);
+	
+	for (int vortIndex = 0; vortIndex < numVorts; vortIndex++) {
 		struct Vortex *vort = &vorts[vortIndex];
 
-		double xPos = IMAGE_W*DOMAIN_SIZE_X / vort->position[0];
-		double yPos = IMAGE_H*DOMAIN_SIZE_Y / vort->position[1];
+		double xPos = IMAGE_W * vort->position[0] / DOMAIN_SIZE_X;
+		double yPos = IMAGE_H * vort->position[1] / DOMAIN_SIZE_Y;
 		double rad = vort->intensity * VORTEX_DRAW_SIZE_CONST;
-
+		
 		cairo_new_sub_path(cr);
-		cairo_arc(cr, xPos, yPos, radius, 0, M_2_PI);
+		cairo_arc(cr, xPos, yPos, rad, 0, 2 * M_PI);
+		cairo_close_path(cr);
+	}
+	
+	cairo_fill(cr);
+	
+	cairo_set_source_rgb(cr, 0, 1, 0);
+	
+	for (int tracerIndex = 0; tracerIndex < NUM_TRACERS; tracerIndex++) {
+		struct Tracer *tracer = &tracers[tracerIndex];
+		
+		double xPos = IMAGE_W * tracer->position[0] / DOMAIN_SIZE_X;
+		double yPos = IMAGE_H * tracer->position[1] / DOMAIN_SIZE_Y;
+		double rad = 1;
+		
+		cairo_new_sub_path(cr);
+		cairo_arc(cr, xPos, yPos, rad, 0, 2 * M_PI);
 		cairo_close_path(cr);
 	}
 
+	cairo_fill(cr);
+	
+	cairo_surface_write_to_png(surface, filename);
+	
 	cairo_destroy(cr);
-	cairo_surfae_write_to_png(surface, filename);
 	cairo_surface_destroy(surface);
 }

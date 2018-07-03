@@ -11,18 +11,17 @@
 #include "constants.h"
 
 #include <stdio.h>
-#include <time.h>
 #include <stdlib.h>
+#include <time.h>
 #include <math.h>
 #include <string.h>
 #include <assert.h>
-#include <cstring.h>
+#include <string.h>
 
 #define BPPOINT printf("")
 
 unsigned int randomSeed;
 int currentTimestep;
-char fPath[] = "./output/"
 
 #pragma mark - Index Calculators
 
@@ -105,7 +104,7 @@ void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, 
 		long radiiIndex = calculateVortexRadiiIndex(vort->vIndex, vortices[j].vIndex);
 		long intRadiiIndex = radiiIndex;
 
-		for (int domain = 0; domain <= 1; domain++) {
+		for (int domain = 0; domain <= 0; domain++) {
 			double rad;
 			double xRad = (vort->vIndex < vortices[j].vIndex) ? intRads[intRadiiIndex + 1] : -intRads[intRadiiIndex + 1];
 			double yRad = (vort->vIndex < vortices[j].vIndex) ? intRads[intRadiiIndex + 2] : -intRads[intRadiiIndex + 2];
@@ -162,7 +161,7 @@ void calculateDxDj_DyDj_tracer(double *dxdj, double *dydj, struct Tracer *tracer
 	for (int vortIndex = 0; vortIndex < numVorts; vortIndex++) {
 		long intRadIndex = calculateTracerRadiiIndex(tracer->tIndex, vortIndex);
 
-		for (int domain = 0; domain <= 8; domain++) {
+		for (int domain = 0; domain <= 0; domain++) {
 			double rad;
 			double xRad = intRads[intRadIndex + 1], yRad = intRads[intRadIndex + 2];
 
@@ -218,8 +217,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 	/*
 	 There is definately some duplicate computation being done here.     ୧(ಠ Д ಠ)୨
 
-	 // this algorithm ends up making 2 coppies of each radius. One in each direction.
-	 // TODO: I think I really want to just copy the whole damn radius matrix
+	  this algorithm ends up making 2 coppies of each radius. One in each direction.
 
 	 // upon further consideration this was very stupid. Definately just do the whole matrix
 
@@ -454,6 +452,14 @@ double minRad(double *radArr, long numPts) {
 	return min;
 }
 
+int mergeVorts(double *vortexRadii, long *numActiveVorts, struct Vortex *vorts) {
+	for (long radIndex = 0; radIndex < vortRadLen; radIndex += 3) {
+		if (vortexRadii[radIndex] < VORTEX_MERGE_RADIUS_CUTOFF) {
+			
+		}
+	}
+}
+
 #pragma mark - initializers
 
 // initialize the driver vortices (in the 1st domain) with unique VIDs and random strengths and positions
@@ -549,7 +555,7 @@ void initialize_single_point(struct Vortex *vortices, int n) {
 	vortices[0].vIndex = 0;
 	vortices[0].velocity = malloc(sizeof(double) * 2);
 	vortices[0].position = malloc(sizeof(double) * 2);
-	vortices[0].position[0] = DOMAIN_SIZE_X/2 - 10;
+	vortices[0].position[0] = DOMAIN_SIZE_X/2;
 	vortices[0].position[1] = DOMAIN_SIZE_Y/2;
 	vortices[0].intensity = VORTEX_INTENSITY_INIT_UPPER_BOUND;
 	vortices[0].initStep = 0;
@@ -662,29 +668,31 @@ int main(int argc, const char * argv[]) {
 		clock_gettime(CLOCK_MONOTONIC, &startTime);
 
 		stepForward_RK4(vortices, vortexRadii, activeDriverVortices, tracerRadii, tracers, NUM_TRACERS);
-		updateRadii_pythagorean(vortexRadii, vortices, activeDriverVortices, tracerRadii, tracers, NUM_TRACERS); // needs optimization. Repeat ops from stepForward_RK4
 		wrapPositions(vortices, activeDriverVortices, tracers, NUM_TRACERS);
-		double minR = minRad(vortexRadii, activeDriverVortices);
-#undef DEBUG
+		updateRadii_pythagorean(vortexRadii, vortices, activeDriverVortices, tracerRadii, tracers, NUM_TRACERS); // needs optimization. Repeat ops from stepForward_RK4
+//		double minR = minRad(vortexRadii, activeDriverVortices);
 #ifdef DEBUG
-		printf("Step number %i\n", currentTimestep);
-		printf("Current min r: %f\n", minR);
+//		printf("Step number %i\n", currentTimestep);
+//		printf("Current min r: %f\n", minR);
 //		if (NUMBER_OF_STEPS != 0 && !(currentTimestep%(NUMBER_OF_STEPS/20))) {
-		if (1) {
-			printf("-----------\n");
-			for (int ind = 0; ind < NUM_TRACERS; ind += 1000) printf("%i	|	%1.5f	|	%1.5f	|	%1.5f\n",
-																			  ind,
-																			  tracers[ind].velocity[0],
-																			  tracers[ind].velocity[1],
-																			  sqrt(pow(tracers[ind].velocity[0], 2) + pow(tracers[ind].velocity[1], 2)));
-
-			printf("Step number %i\n", currentTimestep);
-			struct timespec endTime;
-			clock_gettime(CLOCK_MONOTONIC, &endTime);
-			double sec = (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
-			printf("Step took %f sec\n", sec);
+		if (currentTimestep%RENDER_NTH_STEP == 0) {
+//			printf("-----------\n");
+//			for (int ind = 0; ind < NUM_TRACERS; ind += 1000) printf("%i	|	%1.5f	|	%1.5f	|	%1.5f\n",
+//																			  ind,
+//																			  tracers[ind].velocity[0],
+//																			  tracers[ind].velocity[1],
+//																			  sqrt(pow(tracers[ind].velocity[0], 2) + pow(tracers[ind].velocity[1], 2)));
+//
+//			printf("Step number %i\n", currentTimestep);
+//			struct timespec endTime;
+//			clock_gettime(CLOCK_MONOTONIC, &endTime);
+//			double sec = (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
+//			printf("Step took %f sec\n", sec);
+			
+			printf("%lf\n", tracerRadii[0]);
 		}
 #else
+#ifdef DRAW_CONSOLE
 		if (currentTimestep%RENDER_NTH_STEP == 0) {
 			drawToConsole(vortices, activeDriverVortices, tracers);
 			for (int c = 0; c < ceil(log10(currentTimestep)) + 1; c++) printf("\010");
@@ -695,6 +703,15 @@ int main(int argc, const char * argv[]) {
 
 			nanosleep(&sleepDuration, NULL);
 		}
+#endif
+#ifdef DRAW_PDF
+		if (currentTimestep%RENDER_NTH_STEP == 0) {
+			char *filename = malloc(sizeof(char) * 50);
+			genFName(filename, currentTimestep);
+			drawToFile(vortices, activeDriverVortices, tracers, filename);
+			printf("%s saved\n", filename);
+		}
+#endif
 #endif
 		currentTimestep++;
 	}
