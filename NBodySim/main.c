@@ -452,10 +452,47 @@ double minRad(double *radArr, long numPts) {
 	return min;
 }
 
-int mergeVorts(double *vortexRadii, long *numActiveVorts, struct Vortex *vorts) {
-	for (long radIndex = 0; radIndex < vortRadLen; radIndex += 3) {
-		if (vortexRadii[radIndex] < VORTEX_MERGE_RADIUS_CUTOFF) {
-			
+void deleteVortex(struct Vortex *vort, double *vortexRadii, int *numActiveVorts, struct Vortex *vorts) {
+	int deletionIndex = vort->vIndex;
+
+	double *destPtr;
+	double *sourcePtr;
+
+	for (int rowIndex = deletionIndex; rowIndex < *numActiveVorts; rowIndex++) {
+		destPtr = vortexRadii + calculateVortexRadiiIndex(0, rowIndex);
+		sourcePtr = vortexRadii + calculateVortexRadiiIndex(0, rowIndex+1);
+
+		for (int colIndex = 0; colIndex < rowIndex; colIndex++) {
+			if (colIndex == deletionIndex) {
+				sourcePtr += 3;
+			}
+
+			for (int i = 0; i < 3; i++) {
+				*destPtr = *sourcePtr;
+				destPtr++;
+				sourcePtr++;
+			}
+		}
+	}
+
+	free(vort->position);
+	free(vort->velocity);
+	memcpy(&vorts[deletionIndex], &vorts[deletionIndex+1], (int)sizeof(struct Vortex) * (*numActiveVorts-deletionIndex-1));
+	(*numActiveVorts)--;
+	for (int vortIndex = 0; vortIndex < *numActiveVorts; vortIndex++) {
+		vorts[vortIndex].vIndex--;
+	}
+
+	// TODO: remove vortex from tracer radii array
+}
+
+int mergeVorts(double *vortexRadii, int *numActiveVorts, struct Vortex *vorts) {
+	for (int vort1Index = 1; vort1Index < *numActiveVorts; vort1Index++) {
+		for (int vort2Index = 0; vort2Index < vort1Index; vort2Index++) {
+			long radIndex = calculateVortexRadiiIndex(vort1Index, vort2Index);
+			if (vortexRadii[radIndex] < VORTEX_MERGE_RADIUS_CUTOFF) {
+				deleteVortex(&vorts[vort2Index], vortexRadii, numActiveVorts, vorts);
+			}
 		}
 	}
 }
@@ -602,6 +639,24 @@ void initialize_tracers(struct Tracer *tracers, int n) {
 	}
 }
 
+#pragma mark - misc
+
+void pprintVortRads(double *rads, int numActiveVorts) {
+	long index = 0;
+	for (int row = 0; row < numActiveVorts; row++) {
+		for (int col = 0; col < row; col++) {
+			printf("|");
+			for (int i = 0; i < 3; i++) {
+				printf("%6.2f", rads[index]);
+				if (i != 2) printf(",");
+				index++;
+			}
+			if (col == row-1) printf("|");
+		}
+		printf("\n");
+	}
+}
+
 #pragma mark - main
 
 int main(int argc, const char * argv[]) {
@@ -661,8 +716,12 @@ int main(int argc, const char * argv[]) {
 		}
 	}
 
+	pprintVortRads(vortexRadii, activeDriverVortices);
+	deleteVortex(vortices + 3, vortexRadii, &activeDriverVortices, vortices);
+	printf("----------------\n");
+	pprintVortRads(vortexRadii, activeDriverVortices);
 	/******************* main loop *******************/
-
+return 0;
 	while (NUMBER_OF_STEPS == 0 || currentTimestep < NUMBER_OF_STEPS) {
 		struct timespec startTime;
 		clock_gettime(CLOCK_MONOTONIC, &startTime);
@@ -688,7 +747,7 @@ int main(int argc, const char * argv[]) {
 //			clock_gettime(CLOCK_MONOTONIC, &endTime);
 //			double sec = (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
 //			printf("Step took %f sec\n", sec);
-			
+
 			printf("%lf\n", tracerRadii[0]);
 		}
 #else
