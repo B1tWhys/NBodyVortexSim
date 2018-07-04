@@ -11,6 +11,5 @@ rm ./outputImages/*.mp4
 cd ./outputImages
 
 ffmpeg -f image2 -r 24 -pattern_type glob -i '*.png' output.mp4
-# rm ./*.png
 
 open ./output.mp4

@@ -15,6 +15,14 @@ echo "Will draw to conole at ${drawWidth}x$drawHeight character resolution"
 
 args="-lm -std=gnu11 -DCONSOLE_W=$drawWidth -DCONSOLE_H=$drawHeight"
 
+if [ $debug = "true" ]; then
+	echo "Compiling debug version"
+	args="$args -g -O0"
+else
+	printf "Compiling runtime version.\nTo compile for debug, run: 'export debug=true' then then recompile\n"
+	args+=" -O3"
+fi
+
 if [ `uname` = "Darwin" ]; then
 	args+=" -I /opt/X11/include/cairo -L /usr/lib -l cairo"
 else
@@ -22,14 +30,6 @@ else
 fi
 
 if [ -z "${debug+x}" ]; then debug="false"; fi
-
-if [ $debug = "true" ]; then
-	echo "Compiling debug version"
-	args="$args -DDEBUG -g -O0"
-else
-	printf "Compiling runtime version.\nTo compile for debug, run: 'export debug=true' then then recompile\n"
-	# args="$args -O3"
-fi
 
 command="gcc ./main.c ./guiOutput.c -o ./simulator $args"
 echo "Full compilation instruction is: $command"

@@ -20,7 +20,6 @@ void genFName(char *strBuffer, int frameNum) {
 	strcat(strBuffer, ".png");
 }
 
-
 void drawToConsole(struct Vortex *vorts, int numVorts, struct Tracer *tracers) {
 	printf("\033[3J");
 	int pxArray[CONSOLE_W][CONSOLE_H];
@@ -53,7 +52,9 @@ void drawToConsole(struct Vortex *vorts, int numVorts, struct Tracer *tracers) {
 			if (pxArray[x][y] >= 0) {
 				count++;
 				for (int j = 0; j < ceil(log10(pxArray[x][y])); j++) printf("\010");
+				printf("\033[91m");
 				printf("%i", pxArray[x][y]);
+				printf("\033[0m");
 			} else if (pxArray[x][y] == -2) {
 				printf(".");
 			// } else if (x == CONSOLE_W/2 && y == CONSOLE_H/2) {
@@ -76,38 +77,52 @@ void drawToFile(struct Vortex *vorts, int numVorts, struct Tracer *tracers, char
 	
 	cairo_scale(cr, 1, -1);
 	cairo_translate(cr, 0, -cairo_image_surface_get_height(surface));
-
-	cairo_set_source_rgb(cr, 1 ,0, 0);
+	cairo_set_source_rgb(cr, 0, 0, 0);
+	cairo_paint(cr);
 	
 	for (int vortIndex = 0; vortIndex < numVorts; vortIndex++) {
 		struct Vortex *vort = &vorts[vortIndex];
-
+		
 		double xPos = IMAGE_W * vort->position[0] / DOMAIN_SIZE_X;
 		double yPos = IMAGE_H * vort->position[1] / DOMAIN_SIZE_Y;
-		double rad = vort->intensity * VORTEX_DRAW_SIZE_CONST;
+		double rad = fabs(vort->intensity) * VORTEX_DRAW_SIZE_CONST;
+		
+		if (vort->intensity > 0) {
+			cairo_set_source_rgb(cr, 1, 0, 0);
+		} else {
+			cairo_set_source_rgb(cr, 0, 0, 1);
+		}
 		
 		cairo_new_sub_path(cr);
 		cairo_arc(cr, xPos, yPos, rad, 0, 2 * M_PI);
 		cairo_close_path(cr);
+		cairo_fill(cr);
 	}
 	
-	cairo_fill(cr);
+	cairo_set_source_rgb(cr, 1, 0, 1);
 	
-	cairo_set_source_rgb(cr, 0, 1, 0);
-	
+	int i = 0;
 	for (int tracerIndex = 0; tracerIndex < NUM_TRACERS; tracerIndex++) {
 		struct Tracer *tracer = &tracers[tracerIndex];
 		
 		double xPos = IMAGE_W * tracer->position[0] / DOMAIN_SIZE_X;
 		double yPos = IMAGE_H * tracer->position[1] / DOMAIN_SIZE_Y;
-		double rad = 1;
+		double rad = 2;
+		
+		
 		
 		cairo_new_sub_path(cr);
 		cairo_arc(cr, xPos, yPos, rad, 0, 2 * M_PI);
 		cairo_close_path(cr);
+		if (tracer->tIndex != 23) {
+			cairo_fill(cr);
+		} else {
+			cairo_set_source_rgb(cr, 0, 1, 0);
+			cairo_fill(cr);
+			cairo_set_source_rgb(cr, 1, 0, 1);
+		}
+		i++;
 	}
-
-	cairo_fill(cr);
 	
 	cairo_surface_write_to_png(surface, filename);
 	
