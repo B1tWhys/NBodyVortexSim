@@ -93,7 +93,7 @@ double velocityFunc(double vortex2Intensity, double radius) { // calculates velo
 	return vortex2Intensity/(2.*M_PI*radius);
 }
 
-char domains = 0;
+char domains = 8;
 
 void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, struct Vortex *vortices, int numVorts, double *intRads, long numIntRads) {
 	for (int j = 0; j < numVorts; ++j) {
@@ -325,7 +325,6 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 			double k1_y = 0, k2_y = 0, k3_y = 0, k4_y = 0;
 
 			struct Tracer *tracer = &tracers[tracerIndex];
-			int tracerIndex = tracer->tIndex; // TODO: straight up delete this line. dont need to change anything anywhere
 			
 			dxdj = 0;
 			dydj = 0;
@@ -408,9 +407,9 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 }
 
 double generateRandInRange(double lowerBound, double upperBound) { // range is inclusive on both ends
-	srand(randomSeed++);
-	double range = upperBound-lowerBound + 1;
-	double result = (double)random()/RAND_MAX*(range+1) + lowerBound;
+	// TODO: investigate whether there's an off by 1 error in here
+	double range = upperBound-lowerBound;
+	double result = ((double)random()/RAND_MAX)*range + lowerBound;
 	return result;
 }
 
@@ -798,7 +797,6 @@ int main(int argc, const char * argv[]) {
 			drawToFile(vortices, activeDriverVortices, tracers, filename);
 			clock_gettime(CLOCK_MONOTONIC, &endTime);
 			timespentDrawing += (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
-			
 			
 			printf("Finished frame: %s\n", filename);
 		}

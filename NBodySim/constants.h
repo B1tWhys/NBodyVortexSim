@@ -32,19 +32,20 @@
 #define WINDOW_H 1000
 #define IMAGE_W 500 // size of output images (also not implemented yet)
 #define IMAGE_H 500
-#define VORTEX_DRAW_SIZE_CONST 3
+#define VORTEX_DRAW_SIZE_CONST 10
+#define TRACER_DRAW_SIZE_CONST 3
 
 #define DOMAIN_SIZE_X 64 // size of one box of the simulation in units
 #define DOMAIN_SIZE_Y 64
 
 #define TIMESTEP .01
-#define RENDER_NTH_STEP 2 // speeds up the simulation display
+#define RENDER_NTH_STEP 10 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS // don't change this line
-#define NUMBER_OF_STEPS 5 // number of time steps to simulate. 0 to loop forever
+#define NUMBER_OF_STEPS 2000 // number of time steps to simulate. 0 to loop forever
 #endif // ignore this line too
 
-#define NUM_TRACERS 2025 // NOTE: must be a square number
-#define NUM_VORT_INIT 100
+#define NUM_TRACERS 2500 // NOTE: must be a square number
+#define NUM_VORT_INIT 200
 #define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
 #define VORTEX_INTENSITY_INIT_UPPER_BOUND 1
 #define VORTEX_MERGE_RADIUS_CUTOFF .1
