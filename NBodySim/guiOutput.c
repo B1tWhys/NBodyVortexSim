@@ -109,18 +109,10 @@ void drawToFile(struct Vortex *vorts, int numVorts, struct Tracer *tracers, char
 		double yPos = IMAGE_H * tracer->position[1] / DOMAIN_SIZE_Y;
 		double rad = 2;
 		
-		
-		
 		cairo_new_sub_path(cr);
 		cairo_arc(cr, xPos, yPos, rad, 0, 2 * M_PI);
 		cairo_close_path(cr);
-		if (tracer->tIndex != 23) {
-			cairo_fill(cr);
-		} else {
-			cairo_set_source_rgb(cr, 0, 1, 0);
-			cairo_fill(cr);
-			cairo_set_source_rgb(cr, 1, 0, 1);
-		}
+		cairo_fill(cr);
 		i++;
 	}
 	

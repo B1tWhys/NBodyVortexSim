@@ -4,12 +4,15 @@ export debug=false
 ./compile.sh &&
 
 rm ./outputImages/*.png
-rm ./outputImages/*.mp4
+rm ./output.mp4
 
-./simulator
+time ./simulator
 
-cd ./outputImages
+ffmpeg -f image2 -r 24 -pattern_type glob -i './outputImages/*.png' output.mp4
 
-ffmpeg -f image2 -r 24 -pattern_type glob -i '*.png' output.mp4
-
-open ./output.mp4
+if [ $(uname) = "Darwin" ]; then
+	open ./output.mp4
+else
+	killall vlc
+	vlc -q ./output.mp4
+fi

@@ -205,12 +205,14 @@ void calculateDxDj_DyDj_tracer(double *dxdj, double *dydj, struct Tracer *tracer
 			} else {
 				rad = intRads[intRadIndex];
 			}
-
+			
 			if (rad > DOMAIN_SIZE_X) {
 				continue;
 			}
 
 			double vmag = velocityFunc(vortices[vortIndex].intensity, rad);
+			double dxInc = (yRad/rad) * TIMESTEP * vmag;
+			double dyInc = (-xRad/rad) * TIMESTEP * vmag;
 			*dxdj +=  (yRad/rad) * TIMESTEP * vmag;
 			*dydj += (-xRad/rad) * TIMESTEP * vmag;
 		}
@@ -277,16 +279,16 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 						k1_x += dxdj;
 						k1_y += dydj;
 
-						dxdj = dxdj/2;
-						dydj = dydj/2;
+						dxdj = dxdj/2.;
+						dydj = dydj/2.;
 						break;
 					}
 					case 2: {
 						k2_x += dxdj;
 						k2_y += dydj;
 
-						dxdj = dxdj/2;
-						dydj = dydj/2;
+						dxdj = dxdj/2.;
+						dydj = dydj/2.;
 						break;
 					}
 					case 3: {
@@ -323,7 +325,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 			double k1_y = 0, k2_y = 0, k3_y = 0, k4_y = 0;
 
 			struct Tracer *tracer = &tracers[tracerIndex];
-			int tracerIndex = tracer->tIndex;
+			int tracerIndex = tracer->tIndex; // TODO: straight up delete this line. dont need to change anything anywhere
 			
 			dxdj = 0;
 			dydj = 0;
@@ -340,9 +342,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 									  numVortices);
 
 			for (int vortexIndex = 0; vortexIndex < numVortices; ++vortexIndex) {
-				long radIndex = (long)tracerIndex * (long)vortexIndex;
-
-				assert(radIndex < numVortices * numTracers);
+				long radIndex = calculateTracerRadiiIndex(tracerIndex, vortexIndex);
 
 				switch (RKStep) {
 					case 1: {
@@ -484,7 +484,7 @@ void initialize_drivers_random(struct Vortex *vortices, int n, int startingID) {
 		vortices[i].position[0] = generateRandInRange(0, DOMAIN_SIZE_X);
 		vortices[i].position[1] = generateRandInRange(0, DOMAIN_SIZE_Y);
 		vortices[i].velocity = calloc(2, sizeof(double));
-		vortices[i].intensity = generateRandInRange(0, VORTEX_INTENSITY_INIT_UPPER_BOUND);
+		vortices[i].intensity = generateRandInRange(-VORTEX_INTENSITY_INIT_UPPER_BOUND, VORTEX_INTENSITY_INIT_UPPER_BOUND);
 		vortices[i].initStep = 0;
 	}
 }
@@ -688,6 +688,8 @@ void wrapPositions(struct Vortex *vorts, int numVorts, struct Tracer *tracers, i
 
 #pragma mark - main
 
+float timespentDrawing = 0;
+
 int main(int argc, const char * argv[]) {
 	
 	if (FIRST_SEED == -1) {
@@ -757,8 +759,7 @@ int main(int argc, const char * argv[]) {
 		struct timespec startTime;
 		struct timespec endTime;
 		
-		clock_gettime(CLOCK_MONOTONIC, &startTime);
-#undef DEBUG
+// #undef DEBUG
 #ifdef DEBUG
 //		printf("Current min r: %f\n", minR);
 		if (NUMBER_OF_STEPS != 0 && !(currentTimestep%(NUMBER_OF_STEPS/20))) {
@@ -792,7 +793,13 @@ int main(int argc, const char * argv[]) {
 		if (currentTimestep%RENDER_NTH_STEP == 0) {
 			char *filename = malloc(sizeof(char) * 50);
 			genFName(filename, currentTimestep);
+			
+			clock_gettime(CLOCK_MONOTONIC, &startTime);
 			drawToFile(vortices, activeDriverVortices, tracers, filename);
+			clock_gettime(CLOCK_MONOTONIC, &endTime);
+			timespentDrawing += (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
+			
+			
 			printf("Finished frame: %s\n", filename);
 		}
 #endif
@@ -805,6 +812,8 @@ int main(int argc, const char * argv[]) {
 		//		printf("Step number %i calculation complete\n", currentTimestep);
 		currentTimestep++;
 	}
+
+	printf("Total time spent drawing: %5.2f sec\n", timespentDrawing);
 
 	return 0;
 }
