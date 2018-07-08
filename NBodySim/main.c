@@ -19,6 +19,7 @@
 #include <string.h>
 
 unsigned int randomSeed;
+double timestep = 1;
 int currentTimestep;
 
 #pragma mark - Index Calculators
@@ -93,7 +94,7 @@ double velocityFunc(double vortex2Intensity, double radius) { // calculates velo
 	return vortex2Intensity/(2.*M_PI*radius);
 }
 
-char domains = 8;
+char domains = 0;
 
 void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, struct Vortex *vortices, int numVorts, double *intRads, long numIntRads) {
 	for (int j = 0; j < numVorts; ++j) {
@@ -153,8 +154,8 @@ void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, 
 			}
 
 			double vmag = velocityFunc(vortices[j].intensity, rad); // total velocity magnitude
-			*dxdj +=  (yRad/rad) * TIMESTEP * vmag;
-			*dydj += (-xRad/rad) * TIMESTEP * vmag;
+			*dxdj +=  (yRad/rad) * timestep * vmag;
+			*dydj += (-xRad/rad) * timestep * vmag;
 		}
 	}
 }
@@ -211,10 +212,10 @@ void calculateDxDj_DyDj_tracer(double *dxdj, double *dydj, struct Tracer *tracer
 			}
 
 			double vmag = velocityFunc(vortices[vortIndex].intensity, rad);
-			double dxInc = (yRad/rad) * TIMESTEP * vmag;
-			double dyInc = (-xRad/rad) * TIMESTEP * vmag;
-			*dxdj +=  (yRad/rad) * TIMESTEP * vmag;
-			*dydj += (-xRad/rad) * TIMESTEP * vmag;
+//			double dxInc = (yRad/rad) * timestep * vmag;
+//			double dyInc = (-xRad/rad) * timestep * vmag;
+			*dxdj +=  (yRad/rad) * timestep * vmag;
+			*dydj += (-xRad/rad) * timestep * vmag;
 		}
 	}
 }
@@ -278,7 +279,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 					case 1: {
 						k1_x += dxdj;
 						k1_y += dydj;
-
+						
 						dxdj = dxdj/2.;
 						dydj = dydj/2.;
 						break;
@@ -312,7 +313,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 
 				intermediateVortRads[intRadiiIndex+1] = vortRadii[radiiIndex + 1] + dxdj;
 				intermediateVortRads[intRadiiIndex+2] = vortRadii[radiiIndex + 2] + dydj;
-
+ 
 				// pythagorean.
 				intermediateVortRads[intRadiiIndex] = sqrt(pow(intermediateVortRads[intRadiiIndex+1], 2) + pow(intermediateVortRads[intRadiiIndex+2], 2));
 			}
@@ -328,7 +329,6 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 			
 			dxdj = 0;
 			dydj = 0;
-
 
 			calculateDxDj_DyDj_tracer(&dxdj,
 									  &dydj,
@@ -415,9 +415,9 @@ double generateRandInRange(double lowerBound, double upperBound) { // range is i
 
 #pragma mark - Designated Initializers
 
-double minRad(double *radArr, long numPts) {
-	if (numPts == 0) return 0;
-	long radLen = (pow(numPts, 2)-numPts)/2 * 3;
+double minRad(double *radArr, long numVorts) {
+	if (numVorts == 0) return 0;
+	long radLen = (pow(numVorts, 2)-numVorts)/2 * 3;
 
 	double min = radArr[0];
 	for (int i = 0; i < radLen; i += 3) {
@@ -535,7 +535,6 @@ void initialize_pair_parallel_test(struct Vortex *vortices, int n) {
 
 void initialize_square_system(struct Vortex *vortices, int n) {
 	assert(NUM_VORT_INIT == 4);
-	assert(n == NUM_VORT_INIT);
 
 	double vortMagnitude = VORTEX_INTENSITY_INIT_UPPER_BOUND;
 	double offset = 10;
@@ -583,6 +582,58 @@ void initialize_single_point(struct Vortex *vortices, int n) {
 	vortices[0].initStep = 0;
 }
 
+void initialize_test_case_4(struct Vortex *vortices, int n) {
+	assert(n == 3);
+	
+/*
+	pi = np.float64(4.00*atan(1.0))
+	l12 = np.float64(10.0)
+	thk = np.float64(pi/4.0)
+	tc = np.float64((5.0-3.0*cos(2.0*thk))/12.0/sin(2.0*thk)*l12**2)
+	if tt == 0:
+		xp = np.float64((3.0+np.sqrt(3.0)*cos(thk))/6.0*l12+xmax/2.0)
+		yp = np.float64((np.sqrt(3.0)*sin(thk))/6.0*l12+ymax/2.0)
+		am = np.float64(2.0*2.0*np.pi)
+	if tt == 1:
+		xp = np.float64((-3.0+np.sqrt(3.0)*cos(thk))/6.0*l12+xmax/2.0)
+		yp = np.float64((np.sqrt(3.0)*sin(thk))/6.0*l12+ymax/2.0)
+		am = np.float64(2.0*2.0*np.pi)
+	if tt == 2:
+		xp = np.float64((2.0*np.sqrt(3.0)*cos(thk))/3.0*l12+xmax/2.0)
+		yp = np.float64((2.0*np.sqrt(3.0)*sin(thk))/3.0*l12+ymax/2.0)
+		am = np.float64(-1.0*2.0*np.pi)
+ */
+	
+	double l12 = 10;
+	double thk = M_PI_4;
+	double tc = (5.0 - 3.0 * cos(2.0 * thk))/12.0/sin(2.0 * thk) * pow(l12, 2);
+	printf("Collapse time: %5.2f\n", tc);
+	
+	vortices[0].vIndex = 0;
+	vortices[0].velocity = malloc(sizeof(double) * 2.);
+	vortices[0].position = malloc(sizeof(double) * 2.);
+	vortices[0].position[0] = (3. + sqrt(3.)*cos(thk)) / 6.0 * l12 + DOMAIN_SIZE_X / 2.;
+	vortices[0].position[1] = sqrt(3.) * sin(thk) / 6.0 * l12 + DOMAIN_SIZE_Y / 2.;
+	vortices[0].intensity = 4.*M_PI;
+	vortices[0].initStep = 0;
+	
+	vortices[1].vIndex = 1;
+	vortices[1].velocity = malloc(sizeof(double) * 2.);
+	vortices[1].position = malloc(sizeof(double) * 2.);
+	vortices[1].position[0] = (-3. + sqrt(3.)*cos(thk)) / 6.0 * l12 + DOMAIN_SIZE_X / 2.;
+	vortices[1].position[1] = sqrt(3.) * sin(thk) / 6.0 * l12 + DOMAIN_SIZE_Y / 2.;
+	vortices[1].intensity = 4.*M_PI;
+	vortices[1].initStep = 0;
+	
+	vortices[2].vIndex = 2;
+	vortices[2].velocity = malloc(sizeof(double) * 2.);
+	vortices[2].position = malloc(sizeof(double) * 2.);
+	vortices[2].position[0] = 2. * sqrt(3.) * cos(thk) / 3.0 * l12 + DOMAIN_SIZE_X / 2.;
+	vortices[2].position[1] = 2. * sqrt(3.) * sin(thk) / 3.0 * l12 + DOMAIN_SIZE_Y / 2.;
+	vortices[2].intensity = -2.*M_PI;
+	vortices[2].initStep = 0;
+}
+
 void initialize_vorts(struct Vortex *vortices, int n) {
 	switch (TEST_CASE) {
 		case 0: {
@@ -598,7 +649,11 @@ void initialize_vorts(struct Vortex *vortices, int n) {
 			initialize_square_system(vortices, n);
 			break;
 		} case 4: {
+			initialize_test_case_4(vortices, n);
+			break;
+		} case 5: {
 			initialize_single_point(vortices, n);
+			break;
 		}
 		default:
 			break;
@@ -608,7 +663,9 @@ void initialize_vorts(struct Vortex *vortices, int n) {
 void initialize_tracers(struct Tracer *tracers, int n) {
 	double seperationX = (DOMAIN_SIZE_X) / (sqrt(n) + 1);
 	double seperationY = (DOMAIN_SIZE_Y) / (sqrt(n) + 1);
-
+	
+	assert(sqrt(n) == (int)sqrt(n));
+	
 	int i = 0;
 
 	for (int row = 1; row <= sqrt(n); row++) {
@@ -685,12 +742,21 @@ void wrapPositions(struct Vortex *vorts, int numVorts, struct Tracer *tracers, i
 	}
 }
 
+double maxVelocity(struct Vortex *vorts, int numVorts) {
+	double maxV = 0;
+	for (int i = 0; i < numVorts; i++) {
+		struct Vortex *vort = &vorts[i];
+		double totalV = sqrt(pow(vort->velocity[0], 2) + pow(vort->velocity[1], 2));
+		if (totalV > maxV) maxV = totalV;
+	}
+	return maxV;
+}
+
 #pragma mark - main
 
 float timespentDrawing = 0;
 
 int main(int argc, const char * argv[]) {
-	
 	if (FIRST_SEED == -1) {
 		time((time_t *)&randomSeed);
 		printf("First random seed is %i\n", randomSeed);
@@ -699,13 +765,14 @@ int main(int argc, const char * argv[]) {
 	}
 
 	currentTimestep = 0;
+	timestep = 1;
 	int vorticesAllocated = (int)NUM_VORT_INIT*1.5;
 	int activeDriverVortices = NUM_VORT_INIT;
 
 	// vortices is the array of Vortex structs
 	struct Vortex *vortices = malloc(sizeof(struct Vortex) * vorticesAllocated);
 	initialize_vorts(vortices, activeDriverVortices);
-
+	
 	// radii is the matrix of distances between vortices. The distance between vortex vIndex==a and vortex vIndex==b (where a < b) is at index 3*(a*(a+1)/2+b).
 	// the next item in the array is the x-component of the distance, and then the y-component of the distance
 	// r, r_x, r_y
@@ -747,18 +814,15 @@ int main(int argc, const char * argv[]) {
 		}
 	}
 
-//	pprintVortRads(vortexRadii, activeDriverVortices);
-//	deleteVortex(vortices + 3, vortexRadii, &activeDriverVortices, vortices);
-//	printf("----------------\n");
-//	pprintVortRads(vortexRadii, activeDriverVortices);
-	
 	/******************* main loop *******************/
 
+	double time = 0;
+	
 	while (NUMBER_OF_STEPS == 0 || currentTimestep < NUMBER_OF_STEPS) {
 		struct timespec startTime;
 		struct timespec endTime;
 		
-// #undef DEBUG
+#undef DEBUG
 #ifdef DEBUG
 //		printf("Current min r: %f\n", minR);
 		if (NUMBER_OF_STEPS != 0 && !(currentTimestep%(NUMBER_OF_STEPS/20))) {
@@ -784,8 +848,10 @@ int main(int argc, const char * argv[]) {
 			struct timespec sleepDuration;
 			sleepDuration.tv_sec = 0;
 			sleepDuration.tv_nsec = (1./5)*1E9;
-
-			nanosleep(&sleepDuration, NULL);
+			
+			
+			
+//			nanosleep(&sleepDuration, NULL);
 		}
 #endif
 #ifdef DRAW_PDF
@@ -797,11 +863,14 @@ int main(int argc, const char * argv[]) {
 			drawToFile(vortices, activeDriverVortices, tracers, filename);
 			clock_gettime(CLOCK_MONOTONIC, &endTime);
 			timespentDrawing += (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
-			
-			printf("Finished frame: %s\n", filename);
 		}
 #endif
 #endif
+		double minR = minRad(vortexRadii, activeDriverVortices);
+		timestep = minR / (maxVelocity(vortices, activeDriverVortices)/timestep) * .1;
+		if (timestep > TIMESTEP_CONST) timestep = TIMESTEP_CONST;
+		time += timestep;
+		printf("%i,%f,%f\n", currentTimestep, time, minR);
 		
 		stepForward_RK4(vortices, vortexRadii, activeDriverVortices, tracerRadii, tracers, NUM_TRACERS);
 		wrapPositions(vortices, activeDriverVortices, tracers, NUM_TRACERS);
