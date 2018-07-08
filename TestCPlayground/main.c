@@ -13,11 +13,9 @@
 #include <limits.h>
 
 void testFunc() {
-	int mod1 = -4;
-	int mod2 = 10;
-	int res = (mod1 < 0) ? mod2 + (mod1 % mod2) : mod1 % mod2;
+	double test = 2. * 3.;
 	
-	printf("%i\n", res);
+	printf("%f\n", test);
 }
 
 #pragma mark - main

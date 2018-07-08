@@ -31,19 +31,19 @@ void drawToConsole(struct Vortex *vorts, int numVorts, struct Tracer *tracers) {
 			pxArray[x][y] = -1;
 		}
 	}
-
+	
+	for (int i = 0; i < NUM_TRACERS; i++) {
+		int xPxCoord = (int)(CONSOLE_W-1)*tracers[i].position[0]/DOMAIN_SIZE_X;
+		int yPxCoord = (int)(CONSOLE_H-1)*tracers[i].position[1]/DOMAIN_SIZE_Y;
+		
+		pxArray[xPxCoord][yPxCoord] = -2;
+	}
+	
 	for (int i = 0; i < numVorts; i++) {
 		int xPxCoord = (int)(CONSOLE_W-1)*vorts[i].position[0]/DOMAIN_SIZE_X;
 		int yPxCoord = (int)(CONSOLE_H-1)*vorts[i].position[1]/DOMAIN_SIZE_Y;
 
 		pxArray[xPxCoord][yPxCoord] = vorts[i].vIndex;
-	}
-
-	for (int i = 0; i < NUM_TRACERS; i++) {
-		int xPxCoord = (int)(CONSOLE_W-1)*tracers[i].position[0]/DOMAIN_SIZE_X;
-		int yPxCoord = (int)(CONSOLE_H-1)*tracers[i].position[1]/DOMAIN_SIZE_Y;
-
-		pxArray[xPxCoord][yPxCoord] = -2;
 	}
 
 	int count = 0;

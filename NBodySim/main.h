@@ -2,8 +2,6 @@
 //  main.h
 //  NBodySim
 //
-//  Created by Skyler Arnold on 6/25/18.
-//  Copyright © 2018 Skyler Arnold. All rights reserved.
 //
 
 #ifndef main_h
