@@ -39,14 +39,14 @@
 #define DOMAIN_SIZE_X 64 // size of one box of the simulation in units
 #define DOMAIN_SIZE_Y 64
 
-#define TIMESTEP_CONST .01
+#define TIMESTEP_CONST .001
 #define RENDER_NTH_STEP 1 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS // don't change this line
-#define NUMBER_OF_STEPS 1000 // number of time steps to simulate. 0 to loop forever
+#define NUMBER_OF_STEPS 0 // number of time steps to simulate. 0 to loop forever
 #endif // ignore this line too
 
 #define NUM_TRACERS 64 // NOTE: must be a square number
-#define NUM_VORT_INIT 500
+#define NUM_VORT_INIT 3
 #define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
 #define VORTEX_INTENSITY_INIT_UPPER_BOUND 1
 #define VORTEX_MERGE_RADIUS_CUTOFF .1

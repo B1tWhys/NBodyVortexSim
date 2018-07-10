@@ -35,4 +35,4 @@ command="gcc ./main.c ./guiOutput.c -o ./simulator $args"
 echo "Full compilation instruction is: $command"
 eval "$command"
 
-printf "Compilation complete\n\n\n"
+printf "Compilation complete\n"
