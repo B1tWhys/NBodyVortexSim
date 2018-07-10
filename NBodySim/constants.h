@@ -39,7 +39,7 @@
 #define DOMAIN_SIZE_X 64 // size of one box of the simulation in units
 #define DOMAIN_SIZE_Y 64
 
-#define TIMESTEP_CONST 1
+#define TIMESTEP_CONST .01
 #define RENDER_NTH_STEP 1 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS // don't change this line
 #define NUMBER_OF_STEPS 1000 // number of time steps to simulate. 0 to loop forever
