@@ -17,11 +17,9 @@
 #include <string.h>
 
 unsigned int randomSeed;
-double timestep = 1;
+double timestep = TIMESTEP_CONST;
 int currentTimestep;
-
 #pragma mark - Index Calculators
-
 /**
  This function return the index in the vortex radii array for the radius between a pair of vortices
  
@@ -73,7 +71,6 @@ long calculateTracerRadiiIndex(long tracerIndex, long vortIndex) {
  @param tracers a pointer to the array of Tracer structs
  @param numTracers the number of tracers which should be recalculated
 */
-
 void updateRadii_pythagorean(double *vortexRadii, struct Vortex *vortices, int numVortices, double *tracerRadii, struct Tracer *tracers, int numTracers) {
 	long index;
 
@@ -107,13 +104,11 @@ void updateRadii_pythagorean(double *vortexRadii, struct Vortex *vortices, int n
  @param radius The radial distance to the other vortex
  @return the magnitude of the velocity vector resulting from the interaction of the other vortex on the current vortex
  */
-
 double velocityFunc(double vortex2Intensity, double radius) {
 	return vortex2Intensity/(2.*M_PI*radius);
 }
 
-const char domains = 0; // 0 to disable wrapping of forces, 8 to enable it.
-
+const char domains = 8; // 0 to disable wrapping of forces, 8 to enable it.
 /**
  Calculate the x and y components of the velocity of a vortex based on the strengths of the other vortices, and the distance data in the intRads array
  @param dxdj Pointer to a double which will be updated to reflect the new x-velocity of the vortex
@@ -140,9 +135,10 @@ void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, 
 			if (domain) {
 				/* domain numbering scheme:
 				 1 2 3
-				 4 0 6
-				 7 8 9
+				 4 0 5
+				 6 7 8
 				 */
+				
 				switch (domain) {
 					case 1: {
 						xRad -= DOMAIN_SIZE_X;
@@ -296,16 +292,16 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 		vort->velocity[0] = 0;
 		vort->velocity[1] = 0;
 	}
-
+	
 	for (int i = 0; i < numTracers; i++) {
 		struct Tracer *tracer = &tracers[i];
 		tracer->velocity[0] = 0;
 		tracer->velocity[1] = 0;
 	}
-
+	
 	for (int RKStep = 1; RKStep <= 4; RKStep++) {
 		double dxdj = 0, dydj = 0;
-
+		
 		for (int originVortIndex = 0; originVortIndex < numVortices; ++originVortIndex) {
 			double k1_x = 0, k2_x = 0, k3_x = 0, k4_x = 0;
 			double k1_y = 0, k2_y = 0, k3_y = 0, k4_y = 0;
@@ -315,7 +311,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 
 			dxdj = 0;
 			dydj = 0;
-
+			
 			calculateDxDj_DyDj_vortex(&dxdj, &dydj, vort, vortices, numVortices, intermediateRadii, numVortices);
 			
 			switch (RKStep) {
@@ -350,55 +346,62 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 				}
 			}
 			
-//			switch (RKStep) {
-//				case 1: {
-//					printf("step: %i | vortex: %i | k1_x: %1.15f\n", currentTimestep, vort->vIndex, k1_x);
-//					printf("step: %i | vortex: %i | k1_y: %1.15f\n", currentTimestep, vort->vIndex, k1_y);
-//					break;
-//				}
-//				case 2: {
-//					printf("step: %i | vortex: %i | k2_x: %1.15f\n", currentTimestep, vort->vIndex, k2_x);
-//					printf("step: %i | vortex: %i | k2_y: %1.15f\n", currentTimestep, vort->vIndex, k2_y);
-//					break;
-//				}
-//				case 3: {
-//					printf("step: %i | vortex: %i | k3_x: %1.15f\n", currentTimestep, vort->vIndex, k3_x);
-//					printf("step: %i | vortex: %i | k3_y: %1.15f\n", currentTimestep, vort->vIndex, k3_y);
-//					break;
-//				}
-//				case 4: {
-//					printf("step: %i | vortex: %i | k4_x: %1.15f\n", currentTimestep, vort->vIndex, k4_x);
-//					printf("step: %i | vortex: %i | k4_y: %1.15f\n", currentTimestep, vort->vIndex, k4_y);
-//					break;
-//				}
-//				default: {
-//					break;
-//				}
-//			}
-			
+#ifdef DEBUG
+/*			switch (RKStep) {
+				case 1: {
+					printf("step: %i | vortex: %i | k1_x: %1.15f\n", currentTimestep, vort->vIndex, k1_x);
+					printf("step: %i | vortex: %i | k1_y: %1.15f\n", currentTimestep, vort->vIndex, k1_y);
+					break;
+				}
+				case 2: {
+					printf("step: %i | vortex: %i | k2_x: %1.15f\n", currentTimestep, vort->vIndex, k2_x);
+					printf("step: %i | vortex: %i | k2_y: %1.15f\n", currentTimestep, vort->vIndex, k2_y);
+					break;
+				}
+				case 3: {
+					printf("step: %i | vortex: %i | k3_x: %1.15f\n", currentTimestep, vort->vIndex, k3_x);
+					printf("step: %i | vortex: %i | k3_y: %1.15f\n", currentTimestep, vort->vIndex, k3_y);
+					break;
+				}
+				case 4: {
+					printf("step: %i | vortex: %i | k4_x: %1.15f\n", currentTimestep, vort->vIndex, k4_x);
+					printf("step: %i | vortex: %i | k4_y: %1.15f\n", currentTimestep, vort->vIndex, k4_y);
+					break;
+				}
+				default: {
+					break;
+				}
+			}*/
+#endif
 			for (int j = 0; j < numVortices; ++j) {
 				if (originVortIndex == j) {
 					continue;
 				}
 				
 				long radiiIndex = calculateVortexRadiiIndex(vortIndex, vortices[j].vIndex);
-
-				// perhaps an optimization can be made where we do some kind of lazy copy of radii into intermediateRads,
-				// initially making intermediate Rads only a pointer to radii, then doing the copy here in RK step 1.
-				// This would save 1 large matrix operation.
-				
-				workingRadii[radiiIndex + 1] = vortRadii[radiiIndex + 1] + dxdj;
-				workingRadii[radiiIndex + 2] = vortRadii[radiiIndex + 2] + dydj;
+				// there is probably a cleverer way to do this to avoid having to copy radii into workingRadii every timestep
+				// Whether we add or subtract d_dj from radii depends on which index is larger.
+				if (vort->vIndex < vortices[j].vIndex) {
+					workingRadii[radiiIndex + 1] -= dxdj*timestep;
+					workingRadii[radiiIndex + 2] -= dydj*timestep;
+				} else {
+					workingRadii[radiiIndex + 1] += dxdj*timestep;
+					workingRadii[radiiIndex + 2] += dydj*timestep;
+				}
+//				printf("%.4f\n", dxdj);
+//				workingRadii[radiiIndex + 1] -= dxdj*timestep;
+//				workingRadii[radiiIndex + 2] -= dydj*timestep;
 				
 				// pythagorean.
 				workingRadii[radiiIndex] = sqrt(pow(workingRadii[radiiIndex+1], 2) + pow(workingRadii[radiiIndex+2], 2));
 			}
 			
-			vort->velocity[0] = (k1_x + k2_x * 2 + k3_x * 2 + k4_x)/6;
-			vort->velocity[1] = (k1_y + k2_y * 2 + k3_y * 2 + k4_y)/6;
+			vort->velocity[0] += (k1_x + k2_x * 2 + k3_x * 2 + k4_x)/6;
+			vort->velocity[1] += (k1_y + k2_y * 2 + k3_y * 2 + k4_y)/6;
 		}
-		
+//		printf("------------\n");
 		memcpy(intermediateRadii, workingRadii, vortRadSize);
+		memcpy(workingRadii, vortRadii, vortRadSize);
 		
 		for (int tracerIndex = 0; tracerIndex < numTracers; ++tracerIndex) {
 			double k1_x = 0, k2_x = 0, k3_x = 0, k4_x = 0;
@@ -466,19 +469,19 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
 			tracer->velocity[1] += (k1_y + k2_y * 2. + k3_y * 2. + k4_y)/6.;
 		}
 	}
-
+	
 	for (int i = 0; i < numVortices; ++i) {
 		struct Vortex *vort = &vortices[i];
 		vort->position[0] += vort->velocity[0] * timestep;
 		vort->position[1] += vort->velocity[1] * timestep;
 	}
-
+	
 	for (int i = 0; i < numTracers; ++i) {
 		struct Tracer *tracer = &tracers[i];
 		tracer->position[0] += tracer->velocity[0];
 		tracer->position[1] += tracer->velocity[1];
 	}
-
+	
 	free(workingRadii);
 	free(intermediateRadii);
 	free(intermediateTracerRads);
@@ -492,11 +495,45 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, int numVortices
  
  @return returns a random uniform double in the given range
  */
-double generateRandInRange(double lowerBound, double upperBound) { // range is inclusive on both ends
+double generateUniformRandInRange(double lowerBound, double upperBound) { // range is inclusive on both ends
 	// TODO: investigate whether there's an off by 1 error in here
 	double range = upperBound-lowerBound;
 	double result = ((double)random()/RAND_MAX)*range + lowerBound;
 	return result;
+}
+
+
+double nextNum = NAN;
+
+/**
+ generates a random double from a normal distributuion centered at 0 with a given standard deviation
+ 
+ @discussion this uses the Box-Muller transform to create pairs of random numbers.
+ 	one is returned, and the other is stored for the next time that the function is called.
+ 
+ @param sigma the standard deviation for the normal distribution
+ */
+double generateNormalRand(double sigma) {
+	if (nextNum != NAN) {// if there is a number left over from last time, cache it, clear nextNum, and return the value.
+		double val = nextNum;
+		nextNum = NAN;
+		return val;
+	}
+	
+	double s, R, u, v;
+	
+	while (1) { // generate u & v until s is in (0, 1]
+		u = generateUniformRandInRange(-1, 1);
+		v = generateUniformRandInRange(-1, 1);
+		
+		s = pow(u, 2) + pow(v, 2);
+		if (s != 0 && s < 1) break;
+	}
+	
+	R = pow(s, 2);
+	double multiplier = sqrt(-2.*log(s) / s);
+	nextNum = u * multiplier;
+	return v * multiplier;
 }
 
 #pragma mark - Designated Initializers
@@ -561,6 +598,7 @@ void deleteVortex(struct Vortex *vort, double *vortexRadii, int *numActiveVorts,
 	
 	// TODO: remove vortex from tracer radii array
 	
+	
 }
 /**
  find all vortices which should be merged and perform the merges
@@ -594,10 +632,10 @@ void initialize_drivers_random(struct Vortex *vortices, int n, int startingID) {
 	for (int i = 0; i < n; ++i) {
 		vortices[i].vIndex = startingID++;
 		vortices[i].position = malloc(sizeof(double) * 2);
-		vortices[i].position[0] = generateRandInRange(0, DOMAIN_SIZE_X);
-		vortices[i].position[1] = generateRandInRange(0, DOMAIN_SIZE_Y);
+		vortices[i].position[0] = generateUniformRandInRange(0, DOMAIN_SIZE_X);
+		vortices[i].position[1] = generateUniformRandInRange(0, DOMAIN_SIZE_Y);
 		vortices[i].velocity = calloc(2, sizeof(double));
-		vortices[i].intensity = generateRandInRange(-VORTEX_INTENSITY_INIT_UPPER_BOUND, VORTEX_INTENSITY_INIT_UPPER_BOUND);
+		vortices[i].intensity = generateNormalRand(VORTEX_INTENSITY_SIGMA);
 		vortices[i].initStep = 0;
 	}
 }
@@ -606,7 +644,7 @@ void initialize_pair_orbit_test(struct Vortex *vortices, int n) {
 	assert(NUM_VORT_INIT == 2);
 	assert(n == NUM_VORT_INIT);
 	double seperation = 4;
-	int intensity = VORTEX_INTENSITY_INIT_UPPER_BOUND;
+	int intensity = 1;
 
 	vortices[0].vIndex = 0;
 	vortices[0].velocity = calloc(sizeof(double), 2);
@@ -629,7 +667,7 @@ void initialize_pair_parallel_test(struct Vortex *vortices, int n) {
 	assert(NUM_VORT_INIT == 2);
 	assert(n == NUM_VORT_INIT);
 
-	double vortMagnitude = VORTEX_INTENSITY_INIT_UPPER_BOUND;
+	double vortMagnitude = 5;
 
 	vortices[0].vIndex = 0;
 	vortices[0].velocity = malloc(sizeof(double) * 2);
@@ -651,7 +689,7 @@ void initialize_pair_parallel_test(struct Vortex *vortices, int n) {
 void initialize_square_system(struct Vortex *vortices, int n) {
 	assert(NUM_VORT_INIT == 4);
 
-	double vortMagnitude = VORTEX_INTENSITY_INIT_UPPER_BOUND;
+	double vortMagnitude = 1;
 	double offset = 10;
 
 	vortices[0].vIndex = 0;
@@ -693,7 +731,7 @@ void initialize_single_point(struct Vortex *vortices, int n) {
 	vortices[0].position = malloc(sizeof(double) * 2);
 	vortices[0].position[0] = DOMAIN_SIZE_X/2;
 	vortices[0].position[1] = DOMAIN_SIZE_Y/2;
-	vortices[0].intensity = VORTEX_INTENSITY_INIT_UPPER_BOUND;
+	vortices[0].intensity = 1;
 	vortices[0].initStep = 0;
 }
 
@@ -730,10 +768,9 @@ void initialize_test_case_4(struct Vortex *vortices, int n) {
 	vortices[2].initStep = 0;
 }
 
-
 /**
  handles initializeing vortices using the appropriate initializer for the current test case
- @param an array to put the new vortices into
+ @param vortices array to put the new vortices into
  @param n the number of vortices to create
  */
 void initialize_vorts(struct Vortex *vortices, int n) {
@@ -887,14 +924,14 @@ int main(int argc, const char * argv[]) {
 	// vortices is the array of Vortex structs
 	struct Vortex *vortices = malloc(sizeof(struct Vortex) * vorticesAllocated);
 	initialize_vorts(vortices, activeDriverVortices);
-	
-	// radii is the matrix of distances between vortices. The distance between vortex vIndex==a and vortex vIndex==b (where a < b) is at index 3*(a*(a+1)/2+b).
-	// the next item in the array is the x-component of the distance, and then the y-component of the distance
-	// r, r_x, r_y
 
 //	int radiiLen = sizeof(double) * (pow(vorticesAllocated, 2) - vorticesAllocated);
-	unsigned long vortexRadiiLen = sizeof(double) * (calculateVortexRadiiIndex(vorticesAllocated-1, vorticesAllocated-2) + 1);
+	unsigned long vortexRadiiLen = sizeof(double) * (calculateVortexRadiiIndex(vorticesAllocated-1, vorticesAllocated-2) + 3);
 
+	// vortexRadii is the matrix of distances between vortices. The distance between vortex vIndex==a and vortex vIndex==b (where a < b) is at index 3*(a*(a+1)/2+b).
+	// the next item in the array is the x-component of the distance, and then the y-component of the distance
+	// r, r_x, r_y
+	
 	double *vortexRadii = malloc(vortexRadiiLen);
 //	double *radii = calloc(sizeof(double), pow(vorticesAllocated, 2) - vorticesAllocated);
 
@@ -908,14 +945,12 @@ int main(int argc, const char * argv[]) {
 	/******************* main loop *******************/
 
 	double time = 0;
-	double prevMinR = 0;
 	
 	while (NUMBER_OF_STEPS == 0 || currentTimestep < NUMBER_OF_STEPS) {
 		struct timespec startTime;
 		struct timespec endTime;
-		
-#undef DEBUG
-#ifdef DEBUG
+
+/*#ifdef DEBUG
 		printf("Current min r: %f\n", minR);
 		if (currentTimestep%RENDER_NTH_STEP == 0) {
 			printf("-----------\n");
@@ -930,7 +965,7 @@ int main(int argc, const char * argv[]) {
 			double sec = (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
 			printf("Step took %f sec\n", sec);
 		}
-#else
+#else*/
 #ifdef DRAW_CONSOLE
 		if (currentTimestep%RENDER_NTH_STEP == 0) {
 			drawToConsole(vortices, activeDriverVortices, tracers);
@@ -955,20 +990,33 @@ int main(int argc, const char * argv[]) {
 			timespentDrawing += (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
 		}
 #endif
-#endif
 		double minR = minRad(vortexRadii, activeDriverVortices);
-		prevMinR = minR;
-		double maxV = maxVelocity(vortices, activeDriverVortices);
-		timestep = minR / (maxV/timestep) * .1;
-		
-		if (timestep > TIMESTEP_CONST || maxV == 0) timestep = TIMESTEP_CONST;
-		time += timestep;
-		printf("%i,%f,%f\n", currentTimestep, time, minR);
+		if (TEST_CASE == 4) {
+			double maxV = maxVelocity(vortices, activeDriverVortices);
+			timestep = minR / maxV * .5;
+//			if (minR < .5 && currentTimestep%1000 == 0) {
+//				printf("%f\n", maxV);
+//			}
+
+			if (timestep > TIMESTEP_CONST || maxV == 0) timestep = TIMESTEP_CONST;
+			time += timestep;
+//			if (currentTimestep) {
+//				printf("");
+//			}
+		}
+#ifdef DEBUG
+//		printf("step: %i| sec: %f| timestep: %.15f| minR: %.15f\n", currentTimestep, time, timestep, minR);
+#else
+//		if (currentTimestep%1 == 0) {
+//			printf("%.15f,%.15f\n", time, minR);
+//		}
+#endif
+		if (time > 50) return 0;
 		
 		stepForward_RK4(vortices, vortexRadii, activeDriverVortices, tracerRadii, tracers, NUM_TRACERS);
 		wrapPositions(vortices, activeDriverVortices, tracers, NUM_TRACERS);
 		updateRadii_pythagorean(vortexRadii, vortices, activeDriverVortices, tracerRadii, tracers, NUM_TRACERS); // needs optimization. Repeat ops from stepForward_RK4
-		//		printf("Step number %i calculation complete\n", currentTimestep);
+		printf("Step number %i calculation complete\n", currentTimestep);
 		currentTimestep++;
 	}
 

@@ -22,8 +22,8 @@ void genFName(char *strBuffer, int frameNum) {
 
 void drawToConsole(struct Vortex *vorts, int numVorts, struct Tracer *tracers) {
 	printf("\033[3J");
+	printf("CONSOLE_W: %i | CONSOLE_H: %i\n", CONSOLE_W, CONSOLE_H);
 	int pxArray[CONSOLE_W][CONSOLE_H];
-
 	// -2 means draw a tracer there, -1 means empty, >= 0 means a vort is there.
 
 	for (int y = 0; y < CONSOLE_H; y++) {
@@ -45,29 +45,28 @@ void drawToConsole(struct Vortex *vorts, int numVorts, struct Tracer *tracers) {
 
 		pxArray[xPxCoord][yPxCoord] = vorts[i].vIndex;
 	}
-
 	int count = 0;
-	for (int y = CONSOLE_H; y >= 0; y--) {
+	for (int y = CONSOLE_H-1; y >= 0; y--) {
 		for (int x = 0; x < CONSOLE_W; x++) {
+			count++;
+
 			if (pxArray[x][y] >= 0) {
-				count++;
-				for (int j = 0; j < ceil(log10(pxArray[x][y])); j++) printf("\010");
-				printf("\033[91m");
+				int indexStrLen = (pxArray[x][y] == 0) ? 1 : ceil(log10(pxArray[x][y] + 1));
+				for (int j = 0; j < indexStrLen; j++) printf("\010");
+				if (vorts[pxArray[x][y]].intensity > 0) {
+					printf("\033[91m");
+				} else {
+					printf("\033[94m");
+				}
 				printf("%i", pxArray[x][y]);
 				printf("\033[0m");
 			} else if (pxArray[x][y] == -2) {
 				printf(".");
-			// } else if (x == CONSOLE_W/2 && y == CONSOLE_H/2) {
-			// 	printf("+");
-			// } else if (x == CONSOLE_W/2) {
-			// 	printf("|");
-			// } else if (y == CONSOLE_H/2) {
-			// 	printf("-");
 			} else {
 				printf(" ");
 			}
 		}
-		if (y != CONSOLE_H) printf("\n");
+		printf("\n");
 	}
 }
 
