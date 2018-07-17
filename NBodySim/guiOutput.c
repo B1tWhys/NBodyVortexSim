@@ -49,7 +49,6 @@ void drawToConsole(struct Vortex *vorts, int numVorts, struct Tracer *tracers) {
 	for (int y = CONSOLE_H-1; y >= 0; y--) {
 		for (int x = 0; x < CONSOLE_W; x++) {
 			count++;
-
 			if (pxArray[x][y] >= 0) {
 				int indexStrLen = (pxArray[x][y] == 0) ? 1 : ceil(log10(pxArray[x][y] + 1));
 				for (int j = 0; j < indexStrLen; j++) printf("\010");
