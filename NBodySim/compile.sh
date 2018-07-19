@@ -15,13 +15,18 @@ fi
 
 echo "Will draw to conole at ${drawWidth}x$drawHeight character resolution"
 
-args="-lm -std=gnu11 -DCONSOLE_W=$drawWidth -DCONSOLE_H=$drawHeight"
+args="-lm -std=gnu11 -DCONSOLE_W=$drawWidth -DCONSOLE_H=$drawHeight -lprofiler -lpthread"
 
-if [ $debug = "true" ]; then
-	echo "Compiling debug version"
-	args="$args -g -O0 -DDEBUG"
+if [ $mode = "debug" ]; then
+	printf "Compiling debug version.\nTo compile for production, run: 'export mode=prod' then then recompile\n"
+	# args="$args -g -O0 -DDEBUG"
+	args="$args -g -O0"
+elif [ $mode = "prof"]; then
+		printf "Compiling profiling version."
+		
+		args="$args -g -O3"
 else
-	printf "Compiling runtime version.\nTo compile for debug, run: 'export debug=true' then then recompile\n"
+	printf "Compiling runtime version.\nTo compile for debug, run: 'export mode=debug' then then recompile\n"
 	args+=" -O3"
 fi
 

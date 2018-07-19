@@ -111,6 +111,7 @@ void drawToFile(struct Vortex *vorts, int numVorts, struct Tracer *tracers, char
 		cairo_arc(cr, xPos, yPos, rad, 0, 2 * M_PI);
 		cairo_close_path(cr);
 		cairo_fill(cr);
+		
 		i++;
 	}
 	
