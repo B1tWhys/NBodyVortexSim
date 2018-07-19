@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D4A383F321011F14009D21FF /* libpthread.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4A383F221011F14009D21FF /* libpthread.tbd */; };
 		D4CCD22020EBB2C20059D986 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD20520EBB2480059D986 /* main.c */; };
 		D4CCD22120EBB32E0059D986 /* guiOutput.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD20320EBB2480059D986 /* guiOutput.c */; };
 		D4E3FF7D20EBB67A00B4A0EA /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD1FF20EBB2480059D986 /* main.c */; };
@@ -35,6 +36,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D4A383F221011F14009D21FF /* libpthread.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libpthread.tbd; path = usr/lib/libpthread.tbd; sourceTree = SDKROOT; };
 		D4CCD1FF20EBB2480059D986 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		D4CCD20120EBB2480059D986 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		D4CCD20320EBB2480059D986 /* guiOutput.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = guiOutput.c; sourceTree = "<group>"; };
@@ -51,6 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4A383F321011F14009D21FF /* libpthread.tbd in Frameworks */,
 				D4E3FF8020EBB71200B4A0EA /* libcairo.2.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -107,6 +110,7 @@
 		D4E3FF7E20EBB71100B4A0EA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D4A383F221011F14009D21FF /* libpthread.tbd */,
 				D4E3FF7F20EBB71200B4A0EA /* libcairo.2.dylib */,
 			);
 			name = Frameworks;
