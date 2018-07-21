@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D41DAF0B2102A2F40076F0EF /* TestCaseInitializers.c in Sources */ = {isa = PBXBuildFile; fileRef = D41DAF0A2102A2F40076F0EF /* TestCaseInitializers.c */; };
 		D4A383F321011F14009D21FF /* libpthread.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4A383F221011F14009D21FF /* libpthread.tbd */; };
 		D4CCD22020EBB2C20059D986 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD20520EBB2480059D986 /* main.c */; };
 		D4CCD22120EBB32E0059D986 /* guiOutput.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD20320EBB2480059D986 /* guiOutput.c */; };
@@ -36,6 +37,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D41DAF092102A2F40076F0EF /* TestCaseInitializers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestCaseInitializers.h; sourceTree = "<group>"; };
+		D41DAF0A2102A2F40076F0EF /* TestCaseInitializers.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = TestCaseInitializers.c; sourceTree = "<group>"; };
 		D4A383F221011F14009D21FF /* libpthread.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libpthread.tbd; path = usr/lib/libpthread.tbd; sourceTree = SDKROOT; };
 		D4CCD1FF20EBB2480059D986 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		D4CCD20120EBB2480059D986 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
@@ -82,6 +85,8 @@
 				D4CCD20420EBB2480059D986 /* constants.h */,
 				D4CCD20120EBB2480059D986 /* main.h */,
 				D4CCD20520EBB2480059D986 /* main.c */,
+				D41DAF092102A2F40076F0EF /* TestCaseInitializers.h */,
+				D41DAF0A2102A2F40076F0EF /* TestCaseInitializers.c */,
 				D4CCD20620EBB2480059D986 /* guiOutput.h */,
 				D4CCD20320EBB2480059D986 /* guiOutput.c */,
 			);
@@ -196,6 +201,7 @@
 			files = (
 				D4CCD22120EBB32E0059D986 /* guiOutput.c in Sources */,
 				D4CCD22020EBB2C20059D986 /* main.c in Sources */,
+				D41DAF0B2102A2F40076F0EF /* TestCaseInitializers.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

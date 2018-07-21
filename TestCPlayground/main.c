@@ -13,7 +13,7 @@
 #include <limits.h>
 
 void testFunc() {
-	double test = 2. * 3.;
+	double *test = 
 	
 	printf("%f\n", test);
 }

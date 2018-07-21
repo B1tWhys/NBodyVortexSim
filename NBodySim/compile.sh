@@ -15,7 +15,7 @@ fi
 
 echo "Will draw to conole at ${drawWidth}x$drawHeight character resolution"
 
-args="-lm -std=gnu11 -DCONSOLE_W=$drawWidth -DCONSOLE_H=$drawHeight -lprofiler -lpthread"
+args="-lm -std=gnu11 -DCONSOLE_W=$drawWidth -DCONSOLE_H=$drawHeight -lpthread"
 
 if [ $mode = "debug" ]; then
 	printf "Compiling debug version.\nTo compile for production, run: 'export mode=prod' then then recompile\n"
