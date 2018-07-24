@@ -17,7 +17,7 @@
  3:		square of vorts			(4)
  4:		test case 4				(3)
  5:		single vort initializer	(1)
- 6:		traer accuracy test		(2) (1 tracer)
+ 6:		tracer accuracy test	(2) (1 tracer)
  */
 #define TEST_CASE 0
 
@@ -29,30 +29,29 @@
 // render mode selection
 //#define DRAW_CONSOLE
 #define DRAW_PDF
+//#define SAVE_RAWDATA
 
-#define WINDOW_W 1000 // px dimentions for output window (not implemented yet)
-#define WINDOW_H 1000
-#define IMAGE_W 1000 // size of output images (also not implemented yet)
+#define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
-#define VORTEX_DRAW_SIZE_CONST 5
-#define TRACER_DRAW_SIZE_CONST 1
+#define VORTEX_DRAW_SIZE_CONST 4
+#define TRACER_DRAW_SIZE_CONST .5
 
 #define DOMAIN_SIZE_X 64 // size of one box of the simulation in units
 #define DOMAIN_SIZE_Y 64
 
-#define TIMESTEP_CONST .1
+#define TIMESTEP_CONST .05
 #define RENDER_NTH_STEP 1 // speeds up the simulation display
-#ifndef NUMBER_OF_STEPS // don't change this line
-#define NUMBER_OF_STEPS 15 // number of time steps to simulate. 0 to loop forever
-#endif // ignore this line too
+#ifndef NUMBER_OF_STEPS
+#define NUMBER_OF_STEPS 1000 // number of time steps to simulate. 0 to loop forever
+#endif
 
-//#define NUM_TRACERS 50176 // NOTE: must be a square number
-#define NUM_TRACERS 25 // NOTE: must be a square number
-#define NUM_VORT_INIT 64
+#define NUM_TRACERS 50176 // NOTE: must be a square number
+#define NUM_VORT_INIT 200
 #define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
 
+//#define VORTEX_LIFECYCLE
 #define VORTEX_INTENSITY_SIGMA 0.21233045007200477
-#define VORTEX_SPAWN_RATE 64
+#define VORTEX_SPAWN_RATE 2
 #define VORTEX_MERGE_RADIUS 1
 
 #define THREADCOUNT 8

@@ -162,7 +162,7 @@ void initialize_test(struct Vortex *vortices, int n) {
 			initialize_single_point(vortices, n);
 			break;
 		} case 6: {
-			initialize_test_case_4(vortices, n);
+			initialize_pair_orbit_test(vortices, n);
 			break;
 		}
 		default:

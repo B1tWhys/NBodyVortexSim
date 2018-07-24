@@ -13,9 +13,13 @@
 #include <limits.h>
 
 void testFunc() {
-	double *test = 
+	FILE *testFile;
+	testFile = fopen("./testFile", "w");
 	
-	printf("%f\n", test);
+	
+//	fprintf(testFile, "test text 123");
+	fputc(29, testFile);
+	
 }
 
 #pragma mark - main

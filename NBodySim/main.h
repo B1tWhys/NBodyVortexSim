@@ -7,15 +7,8 @@
 #ifndef main_h
 #define main_h
 
-// A vortex is either active, meaning that it sould continue existing
-// or its state is Merged meaning that it was merged into another vortex, and
-// is awaiting being either deleted or re-initialized at a new location with
-// a new intensity
-//enum vortStatus {Active, Merged};
-
 struct Vortex {
 	int vIndex;
-//	enum vortStatus status;
 	int initStep;
 	
 	double intensity;

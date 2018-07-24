@@ -9,7 +9,7 @@
 
 
 void genFName(char *strBuffer, int frameNum) {
-	strcpy(strBuffer, "./outputImages/frame_");
+	strcpy(strBuffer, "./data/outputImages/frame_");
 	char buffer[9];
 	sprintf(buffer, "%i", frameNum);
 	
@@ -97,7 +97,7 @@ void drawToFile(struct Vortex *vorts, int numVorts, struct Tracer *tracers, char
 		cairo_fill(cr);
 	}
 	
-	cairo_set_source_rgb(cr, 1, 0, 1);
+	cairo_set_source_rgb(cr, 0, 1, 0);
 	
 	int i = 0;
 	for (int tracerIndex = 0; tracerIndex < NUM_TRACERS; tracerIndex++) {
