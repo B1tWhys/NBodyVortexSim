@@ -12,6 +12,8 @@
 
 #include <stdio.h>
 
+void openFile(void);
 void saveState(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers);
+void closeFile(void);
 
 #endif /* SaveState_h */

@@ -31,8 +31,13 @@
  .
  */
 
+FILE *file;
+
+void openFile() {
+	file = fopen("./data/rawData", "a");
+}
+
 void saveState(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
-	FILE *file = fopen("./data/rawData", "a");
 	fprintf(file, "%i,%f,%u,%i,%i\n", timestep, currentTime, currentSeed, numVorts, numTracers);
 	fputc(30, file);
 	for (int i = 0; i < numVorts; i++) {
@@ -61,6 +66,8 @@ void saveState(int timestep, double currentTime, unsigned int currentSeed, int n
 	}
 	
 	fputc(29, file);
-	
+}
+
+void closeFile() {
 	fclose(file);
 }

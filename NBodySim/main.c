@@ -9,6 +9,7 @@
 #include "constants.h"
 #include "TestCaseInitializers.h"
 #include "SaveState.h"
+#include "RNG.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +19,7 @@
 #include <assert.h>
 #include <string.h>
 #include <pthread.h>
+#include <limits.h>
 
 #undef DEBUG
 
@@ -582,56 +584,6 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 	free(intermediateTracerRads);
 }
 
-#pragma mark - RNGs
-
-/**
- generates a uniformly random double value in a range
- 
- @param lowerBound the lower bound for the random number
- @param upperBound the upper bound for the random number
- 
- @return returns a random uniform double in the given range
- */
-double generateUniformRandInRange(double lowerBound, double upperBound) { // range is inclusive on both ends
-	// TODO: investigate whether there's an off by 1 error in here
-	double range = upperBound-lowerBound;
-	double result = ((double)random()/RAND_MAX)*range + lowerBound;
-	return result;
-}
-
-double nextNum = NAN;
-
-/**
- generates a random double from a normal distributuion centered at 0 with a given standard deviation
- 
- @discussion this uses the Box-Muller transform to create pairs of random numbers.
- 	one is returned, and the other is stored for the next time that the function is called.
- 
- @param sigma the standard deviation for the normal distribution
- */
-double generateNormalRand(double sigma) {
-	if (nextNum == NAN) {// if there is a number left over from last time, cache it, clear nextNum, and return the value.
-		double val = nextNum;
-		nextNum = NAN;
-		return val;
-	}
-	
-	double s, R, u, v;
-	
-	while (1) { // generate u & v until s is in (0, 1]
-		u = generateUniformRandInRange(-1, 1);
-		v = generateUniformRandInRange(-1, 1);
-		
-		s = pow(u, 2) + pow(v, 2);
-		if (s != 0 && s < 1) break;
-	}
-	
-	R = pow(s, 2);
-	double multiplier = sqrt(-2.*log(s) / s);
-	nextNum = u * multiplier;
-	return v * multiplier;
-}
-
 #pragma mark - Vortex Lifecycle
 
 /**
@@ -665,7 +617,7 @@ void deleteVortex(struct Vortex *vort, double *vortexRads, struct Vortex *vorts,
 	for (int tracerI = 0; tracerI < NUM_TRACERS; tracerI++) {
 		long tRadDelIndex = calculateTracerRadiiIndex(tracerI, deletionIndex);
 		
-		memmove(&tracerRads[tRadDelIndex], &tracerRads[tRadDelIndex+1], (numDriverVorts-deletionIndex-1) * sizeof(double) * 3);
+		memmove(&tracerRads[tRadDelIndex], &tracerRads[tRadDelIndex+1], (numDriverVorts-deletionIndex) * sizeof(double) * 3);
 	}
 	
 	// remove vortex from vorts array
@@ -792,11 +744,11 @@ int mergeVorts(double *vortexRadii, struct Vortex *vorts, double *tracerRads, st
 					} else {
 						deleteVortex(vort2, vortexRadii, vorts, tracerRads); // a faster way to do this would be to mark each vortex for deletion, then go through and remove them all at once
 					}
-					updateRadii_pythagorean(vortexRadii, vorts, tracerRads, tracers, NUM_TRACERS); // if this becomes a significant speed issue, a new function which only computes the relevant radii should be written
-
+					break;
 				}
 			}
 		}
+		updateRadii_pythagorean(vortexRadii, vorts, tracerRads, tracers, NUM_TRACERS); // if this becomes a significant speed issue, a new function which only computes the relevant radii should be written
 	} while (merges > 0);
 	
 	return spawnsLeft;
@@ -975,8 +927,13 @@ int main(int argc, const char * argv[]) {
 	double *tracerRadii = malloc(tracerRadSize); // row = vortex, col = tracer; Note: vortPos - tracerPos
 	
 	if (TEST_CASE == 0) {
-		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, NUM_VORT_INIT);
+		int spawnsRemaining = NUM_VORT_INIT;
+		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, spawnsRemaining);
 		initialize_tracers(tracers, NUM_TRACERS);
+
+		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
+		// Generate vortices so that they don't end up being merged on the first timestep.
+		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, INT_MAX);
 	} else {
 		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, NUM_VORT_INIT);
 		initialize_test(vortices, numDriverVorts);
@@ -985,11 +942,9 @@ int main(int argc, const char * argv[]) {
 		} else {
 			initialize_single_test_tracer(tracers, NUM_TRACERS, vortices);
 		}
+		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
 	}
 	
-	updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
-
-
 	/******************* main loop *******************/
 	
 	while (NUMBER_OF_STEPS == 0 || currentTimestep < NUMBER_OF_STEPS) {
@@ -1020,15 +975,6 @@ int main(int argc, const char * argv[]) {
 			timespentDrawing += (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
 		}
 #endif
-#ifdef SAVE_RAWDATA
-		saveState(currentTimestep,
-				  time,
-				  randomSeed,
-				  numDriverVorts,
-				  NUM_TRACERS,
-				  vortices,
-				  tracers);
-#endif
 		
 		// adjust the timestep based on minRad and maxVel for test case 4
 		if (TEST_CASE == 4) {
@@ -1043,12 +989,8 @@ int main(int argc, const char * argv[]) {
 		clock_gettime(CLOCK_MONOTONIC, &startTime);
 		
 #ifdef VORTEX_LIFECYCLE
-		int spawnBound = NUM_VORT_INIT * NUMBER_OF_STEPS * timestep;
-		int spawnCount = generateUniformRandInRange(0, spawnBound) * NUMBER_OF_STEPS;
-		printf("spawnCount: %i\n", spawnCount);
-		
-
-		int spawnsLeft = mergeVorts(vortexRadii, vortices, tracerRadii, tracers, spawnCount);
+		int numSpawns = generatePoissonRand(0, VORTEX_SPAWN_RATE, 0);
+		int spawnsLeft = mergeVorts(vortexRadii, vortices, tracerRadii, tracers, numSpawns);
 
 		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, spawnsLeft);
 		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, 0);
@@ -1060,9 +1002,21 @@ int main(int argc, const char * argv[]) {
 		clock_gettime(CLOCK_MONOTONIC, &endTime);
 		double sec = (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
 		printf("Step number %i calculation complete in %f sec with %i vortices\n", currentTimestep, sec, numDriverVorts);
+		
+#ifdef SAVE_RAWDATA // the location of this save might be responsable for an OB1 error.
+		if (currentTimestep == 0) openFile();
+		saveState(currentTimestep,
+				  time,
+				  randomSeed,
+				  numDriverVorts,
+				  NUM_TRACERS,
+				  vortices,
+				  tracers);
+#endif
+		
 		currentTimestep++;
 	}
-
+	
 	printf("Total time spent drawing: %5.2f sec\n", timespentDrawing);
 	
 	for (int vortIndex = 0; vortIndex < numDriverVorts; vortIndex++) {
