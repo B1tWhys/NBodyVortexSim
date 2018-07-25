@@ -114,7 +114,8 @@ void updateRadii_pythagorean(double *vortexRadii, struct Vortex *vortices, doubl
  @return the magnitude of the velocity vector resulting from the interaction of the other vortex on the current vortex
  */
 double velocityFunc(double vortex2Intensity, double radius) {
-	return vortex2Intensity/(2.*M_PI*radius);
+//	return vortex2Intensity/(2.*M_PI*radius);
+	return vortex2Intensity/radius;
 }
 
 #pragma mark - RK4 Functions
@@ -710,9 +711,8 @@ void spawnVorts(double **tracerRads, struct Vortex **vorts, double **vortexRadii
  
  @return The remaining number of spawns after merging is complete.
  */
-int mergeVorts(double *vortexRadii, struct Vortex *vorts, double *tracerRads, struct Tracer *tracers, int spawnsLeft) {
+int mergeVorts(double *vortexRadii, struct Vortex *vorts, double *tracerRads, struct Tracer *tracers, int spawnsLeft, int *totalMerges) {
 	int merges;
-
 	do {
 		merges = 0;
 		
@@ -724,6 +724,10 @@ int mergeVorts(double *vortexRadii, struct Vortex *vorts, double *tracerRads, st
 					
 					struct Vortex *vort1 = &vorts[vortIndex1];
 					struct Vortex *vort2 = &vorts[vortIndex2];
+					
+					
+					printf("merging int1: %.15f | int2: %.15f\n", vort1->intensity, vort2->intensity);
+					(*totalMerges)++;
 					
 					double absInt1 = fabs(vort1->intensity);
 					double absInt2 = fabs(vort2->intensity);
@@ -886,6 +890,24 @@ double maxVelocity(struct Vortex *vorts) {
 	return maxV;
 }
 
+double carryoverSpawnCount;
+int calcSpawnCount() {
+	if (1) {
+		double spawnCount = carryoverSpawnCount + VORTEX_SPAWN_RATE * timestep;
+		if (spawnCount > 1) {
+			carryoverSpawnCount = fmod(spawnCount, 1.);
+			spawnCount = (int)floor(spawnCount - carryoverSpawnCount); // I think that this should round instead of truncating
+			
+		} else {
+			carryoverSpawnCount = spawnCount;
+			spawnCount = 0;
+		}
+		return (int)spawnCount;
+	} else {
+		return generatePoissonRand(0, VORTEX_SPAWN_RATE, 0);
+	}
+}
+
 #pragma mark - Main
 
 float timespentDrawing = 0;
@@ -903,7 +925,7 @@ int main(int argc, const char * argv[]) {
 	currentTimestep = 0;
 	numDriverVorts = 0;
 	double time = 0;
-	
+	carryoverSpawnCount = 0;
 	
 	
 	int vorticesAllocated = (int)NUM_VORT_INIT*1.5;
@@ -930,10 +952,10 @@ int main(int argc, const char * argv[]) {
 		int spawnsRemaining = NUM_VORT_INIT;
 		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, spawnsRemaining);
 		initialize_tracers(tracers, NUM_TRACERS);
-
+		
 		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
 		// Generate vortices so that they don't end up being merged on the first timestep.
-		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, INT_MAX);
+		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, INT_MAX, NULL);
 	} else {
 		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, NUM_VORT_INIT);
 		initialize_test(vortices, numDriverVorts);
@@ -946,6 +968,8 @@ int main(int argc, const char * argv[]) {
 	}
 	
 	/******************* main loop *******************/
+	
+	
 	
 	while (NUMBER_OF_STEPS == 0 || currentTimestep < NUMBER_OF_STEPS) {
 		struct timespec startTime;
@@ -989,11 +1013,13 @@ int main(int argc, const char * argv[]) {
 		clock_gettime(CLOCK_MONOTONIC, &startTime);
 		
 #ifdef VORTEX_LIFECYCLE
-		int numSpawns = generatePoissonRand(0, VORTEX_SPAWN_RATE, 0);
-		int spawnsLeft = mergeVorts(vortexRadii, vortices, tracerRadii, tracers, numSpawns);
-
+		int numSpawns = calcSpawnCount();
+		printf("spawning %i vorts\n", numSpawns);
+		int totalMerges = 0;
+		int spawnsLeft = mergeVorts(vortexRadii, vortices, tracerRadii, tracers, numSpawns, &totalMerges);
 		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, spawnsLeft);
-		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, 0);
+		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, 0, &totalMerges);
+		printf("timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMerges);
 #endif
 		stepForward_RK4(vortices, vortexRadii, tracerRadii, tracers, NUM_TRACERS);
 		wrapPositions(vortices, tracers, NUM_TRACERS);
