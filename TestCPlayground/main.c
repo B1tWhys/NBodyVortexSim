@@ -11,11 +11,15 @@
 #include <math.h>
 #include <time.h>
 #include <limits.h>
+#include <signal.h>
+
+time_t test;
+
 
 double generateUniformRandInRange(double lowerBound, double upperBound) { // range is inclusive on both ends
 	// TODO: investigate whether there's an off by 1 error in here
 	double range = upperBound-lowerBound;
-	double result = ((double)random()/RAND_MAX)*range + lowerBound;
+	double result = ((double)rand()/RAND_MAX)*range + lowerBound;
 	return result;
 }
 
@@ -37,27 +41,35 @@ int generatePoissonRand(double k, double lambda, double x) {
 
 void testFunc() {
 	int n = 100000;
-	int testArr[100];
+	int distArr[100];
 	int totalSpawned = 0;
-	for (int i = 0; i < 100; i++) testArr[i] = 0;
-	
+	for (int i = 0; i < 100; i++) distArr[i] = 0;
+
 	for (int i = 0; i < n; i++) {
 		int val = generatePoissonRand(0, 1., 0);
 		totalSpawned += val;
-		testArr[val]++;
+		distArr[val]++;
 	}
-	
+
 	for (int i = 0; i < 10; i++) {
-		printf("%i: %f\n", i, testArr[i]/(float)n);
+		printf("%i: %f\n", i, distArr[i]/(float)n);
 	}
-	
+
 	printf("\n\ntotalSpawned: %i\n", totalSpawned);
 }
+
+//void testFunc() {
+//	for (int i = 0; i < 5; i++) {
+////		printf("%i\n", generatePoissonRand(0, 1., 0));
+//		printf("%f\n", generateUniformRandInRange(0, 1));
+//	}
+//}
 
 #pragma mark - main
 
 int main(int argc, const char * argv[]) {
-	srand((unsigned int)time(0));
+	test = time(0);
+	srand((unsigned int)test);
 	testFunc();
 	
 	return 0;

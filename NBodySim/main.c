@@ -20,6 +20,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <limits.h>
+#include <signal.h>
 
 #undef DEBUG
 
@@ -89,6 +90,7 @@ void updateRadii_pythagorean(double *vortexRadii, struct Vortex *vortices, doubl
 
 			vortexRadii[index+1] = vortices[i].position[0] - vortices[j].position[0];
 			vortexRadii[index+2] = vortices[i].position[1] - vortices[j].position[1];
+			double rad = sqrt(pow(vortexRadii[index+1], 2.) + pow(vortexRadii[index+2], 2.));
 			vortexRadii[index] = sqrt(pow(vortexRadii[index+1], 2.) + pow(vortexRadii[index+2], 2.));
 		}
 	}
@@ -644,7 +646,7 @@ void randomizeVortex(struct Vortex *vort) {
 
 
 /**
- compute the signed square root of the absolute value of the sum of the signed squared intensities //TODO: figure out how to site Mark's 2016
+ compute the signed square root of the absolute value of the sum of the signed squared intensities // figure out how to site Mark's 2016
  */
 double mergeIntensities(double int1, double int2) {
 	char sign1 = int1/fabs(int1);
@@ -696,9 +698,8 @@ void spawnVorts(double **tracerRads, struct Vortex **vorts, double **vortexRadii
 		}
 	}
 	
-	while (spawnsLeft) {
+	while (spawnsLeft--) {
 		spawnVortex(*vorts);
-		spawnsLeft--;
 	}
 }
 
@@ -725,9 +726,8 @@ int mergeVorts(double *vortexRadii, struct Vortex *vorts, double *tracerRads, st
 					struct Vortex *vort1 = &vorts[vortIndex1];
 					struct Vortex *vort2 = &vorts[vortIndex2];
 					
-					
-					printf("merging int1: %.15f | int2: %.15f\n", vort1->intensity, vort2->intensity);
-					(*totalMerges)++;
+//					printf("merging int1: %.15f | int2: %.15f\n", vort1->intensity, vort2->intensity);
+					if (totalMerges) (*totalMerges)++;
 					
 					double absInt1 = fabs(vort1->intensity);
 					double absInt2 = fabs(vort2->intensity);
@@ -748,11 +748,11 @@ int mergeVorts(double *vortexRadii, struct Vortex *vorts, double *tracerRads, st
 					} else {
 						deleteVortex(vort2, vortexRadii, vorts, tracerRads); // a faster way to do this would be to mark each vortex for deletion, then go through and remove them all at once
 					}
+					updateRadii_pythagorean(vortexRadii, vorts, tracerRads, tracers, NUM_TRACERS); // if this becomes a significant speed issue, a new function which only computes the relevant radii should be written
 					break;
 				}
 			}
 		}
-		updateRadii_pythagorean(vortexRadii, vorts, tracerRads, tracers, NUM_TRACERS); // if this becomes a significant speed issue, a new function which only computes the relevant radii should be written
 	} while (merges > 0);
 	
 	return spawnsLeft;
@@ -891,13 +891,18 @@ double maxVelocity(struct Vortex *vorts) {
 }
 
 double carryoverSpawnCount;
+
 int calcSpawnCount() {
-	if (1) {
+//	return 12;
+	
+	if ((1)) {
+		
 		double spawnCount = carryoverSpawnCount + VORTEX_SPAWN_RATE * timestep;
 		if (spawnCount > 1) {
 			carryoverSpawnCount = fmod(spawnCount, 1.);
+			if (fabs(carryoverSpawnCount) < .000001) carryoverSpawnCount = 0;
 			spawnCount = (int)floor(spawnCount - carryoverSpawnCount); // I think that this should round instead of truncating
-			
+//			spawnCount = (int)round(spawnCount - carryoverSpawnCount); // I think that this should round instead of truncating
 		} else {
 			carryoverSpawnCount = spawnCount;
 			spawnCount = 0;
@@ -908,11 +913,20 @@ int calcSpawnCount() {
 	}
 }
 
+void termination_handler(int sig) {
+	closeFile();
+	signal(sig, SIG_DFL);
+	raise(sig);
+}
+
 #pragma mark - Main
 
 float timespentDrawing = 0;
 
 int main(int argc, const char * argv[]) {
+	signal(SIGTERM, termination_handler);
+	signal(SIGINT, termination_handler);
+	
 	if (FIRST_SEED == -1) {
 		time((time_t *)&randomSeed);
 		printf("First random seed is %i\n", randomSeed);
@@ -969,8 +983,6 @@ int main(int argc, const char * argv[]) {
 	
 	/******************* main loop *******************/
 	
-	
-	
 	while (NUMBER_OF_STEPS == 0 || currentTimestep < NUMBER_OF_STEPS) {
 		struct timespec startTime;
 		struct timespec endTime;
@@ -1015,11 +1027,12 @@ int main(int argc, const char * argv[]) {
 #ifdef VORTEX_LIFECYCLE
 		int numSpawns = calcSpawnCount();
 		printf("spawning %i vorts\n", numSpawns);
-		int totalMerges = 0;
-		int spawnsLeft = mergeVorts(vortexRadii, vortices, tracerRadii, tracers, numSpawns, &totalMerges);
+		int totalMergeCount = 0;
+		int spawnsLeft = mergeVorts(vortexRadii, vortices, tracerRadii, tracers, numSpawns, &totalMergeCount);
 		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, spawnsLeft);
-		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, 0, &totalMerges);
-		printf("timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMerges);
+		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
+		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, 0, &totalMergeCount);
+		fprintf(stderr, "timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMergeCount);
 #endif
 		stepForward_RK4(vortices, vortexRadii, tracerRadii, tracers, NUM_TRACERS);
 		wrapPositions(vortices, tracers, NUM_TRACERS);
@@ -1028,6 +1041,7 @@ int main(int argc, const char * argv[]) {
 		clock_gettime(CLOCK_MONOTONIC, &endTime);
 		double sec = (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
 		printf("Step number %i calculation complete in %f sec with %i vortices\n", currentTimestep, sec, numDriverVorts);
+		fprintf(stderr, "Step number %i calculation complete in %f sec with %i vortices\n", currentTimestep, sec, numDriverVorts);
 		
 #ifdef SAVE_RAWDATA // the location of this save might be responsable for an OB1 error.
 		if (currentTimestep == 0) openFile();
@@ -1059,6 +1073,7 @@ int main(int argc, const char * argv[]) {
 	free(tracers);
 	free(vortexRadii);
 	free(tracerRadii);
+	closeFile();
 	
 	return 0;
 }

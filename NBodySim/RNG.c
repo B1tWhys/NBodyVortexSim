@@ -20,7 +20,7 @@
 double generateUniformRandInRange(double lowerBound, double upperBound) { // range is inclusive on both ends
 	// TODO: investigate whether there's an off by 1 error in here
 	double range = upperBound-lowerBound;
-	double result = ((double)random()/RAND_MAX)*range + lowerBound;
+	double result = ((double)rand()/RAND_MAX)*range + lowerBound;
 	return result;
 }
 

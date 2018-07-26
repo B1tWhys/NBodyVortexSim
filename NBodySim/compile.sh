@@ -6,10 +6,8 @@ drawHeight=$(tput lines)
 let halfWidth=drawWidth/2
 
 if [ $halfWidth -lt $drawHeight ]; then # the window is too narrow
-	echo 1
 	let drawHeight=$halfWidth
 elif [ $halfWidth -gt $drawHeight ]; then # the window is too thicc
-	echo "2 $halfWidth $drawHeight"
 	let drawWidth=drawHeight*2
 fi
 
@@ -17,11 +15,11 @@ echo "Will draw to conole at ${drawWidth}x$drawHeight character resolution"
 
 args="-lm -std=gnu11 -DCONSOLE_W=$drawWidth -DCONSOLE_H=$drawHeight -lpthread"
 
-if [ $mode = "debug" ]; then
+if [ "${mode:-unset}" = "debug" ]; then
 	printf "Compiling debug version.\nTo compile for production, run: 'export mode=prod' then then recompile\n"
 	# args="$args -g -O0 -DDEBUG"
 	args="$args -g -O0"
-elif [ $mode = "prof"]; then
+elif [ "${mode:-unset}" = "prof"]; then
 		printf "Compiling profiling version."
 		
 		args="$args -g -O3"

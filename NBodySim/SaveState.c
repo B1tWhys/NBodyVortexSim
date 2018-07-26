@@ -34,7 +34,7 @@
 FILE *file;
 
 void openFile() {
-	file = fopen("./data/rawData", "a");
+	file = fopen("./data/rawData", "w");
 }
 
 void saveState(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
@@ -69,5 +69,6 @@ void saveState(int timestep, double currentTime, unsigned int currentSeed, int n
 }
 
 void closeFile() {
+	fprintf(stderr, "closing file\n");
 	fclose(file);
 }
