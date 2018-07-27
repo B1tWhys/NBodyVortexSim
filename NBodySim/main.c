@@ -938,7 +938,7 @@ double maxVelocity(struct Vortex *vorts) {
 double carryoverSpawnCount;
 
 int calcSpawnCount() {	
-	if ((1)) {
+	if ((0)) {
 		double spawnCount = carryoverSpawnCount + VORTEX_SPAWN_RATE * timestep;
 		if (spawnCount > 1) {
 			carryoverSpawnCount = fmod(spawnCount, 1.);

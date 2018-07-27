@@ -7,6 +7,8 @@
 #ifndef constants_h
 #define constants_h
 
+#include <math.h>
+
 /*
  Test case numbering info:
  
@@ -42,24 +44,18 @@
 #define TIMESTEP_CONST .01
 #define RENDER_NTH_STEP 1 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS
-#define NUMBER_OF_STEPS 20 // number of time steps to simulate. 0 to loop forever
+#define NUMBER_OF_STEPS 2000 // number of time steps to simulate. 0 to loop forever
 #endif
 
 #define NUM_TRACERS 1 // NOTE: must be a square number
 #define NUM_VORT_INIT 800
-#define FIRST_SEED 1532673876 // seed the sim. -1 to use current unix time stamp
+#define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
 
-// #define VORTEX_LIFECYCLE
+#define VORTEX_LIFECYCLE
 #define VORTEX_INTENSITY_SIGMA 0.21233045007200477
-#define VORTEX_SPAWN_RATE 256
-#define VORTEX_MERGE_RADIUS 1
+#define VORTEX_SPAWN_RATE 2.56
+#define VORTEX_MERGE_RADIUS 1/(2*M_PI)
 
-#define THREADCOUNT 2
+#define THREADCOUNT 8
 
 #endif
-
-/*
-12: 14.624s
-8:  14.389
-4:  10.354
-*/
