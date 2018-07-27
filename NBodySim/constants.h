@@ -29,7 +29,7 @@
 // render mode selection
 // #define DRAW_CONSOLE
 #define DRAW_PDF
-//#define SAVE_RAWDATA
+#define SAVE_RAWDATA
 
 #define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
@@ -42,18 +42,24 @@
 #define TIMESTEP_CONST .01
 #define RENDER_NTH_STEP 1 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS
-#define NUMBER_OF_STEPS 100 // number of time steps to simulate. 0 to loop forever
+#define NUMBER_OF_STEPS 20 // number of time steps to simulate. 0 to loop forever
 #endif
 
-#define NUM_TRACERS 900 // NOTE: must be a square number
+#define NUM_TRACERS 1 // NOTE: must be a square number
 #define NUM_VORT_INIT 800
-#define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
+#define FIRST_SEED 1532673876 // seed the sim. -1 to use current unix time stamp
 
 // #define VORTEX_LIFECYCLE
 #define VORTEX_INTENSITY_SIGMA 0.21233045007200477
 #define VORTEX_SPAWN_RATE 256
 #define VORTEX_MERGE_RADIUS 1
 
-#define THREADCOUNT 8
+#define THREADCOUNT 2
 
 #endif
+
+/*
+12: 14.624s
+8:  14.389
+4:  10.354
+*/

@@ -366,7 +366,7 @@ void stepForwardTracerRK4(void *arguments) {
 	free(arguments);
 }
 
-void *stepForwardVortexRK4(void *arguments) {
+void stepForwardVortexRK4(void *arguments) {
 	struct VortexArgs *args = arguments;
 	struct Vortex *vortices = args->vortices;
 	int originVortIndex = args->originVortIndex;
@@ -376,6 +376,7 @@ void *stepForwardVortexRK4(void *arguments) {
 	int RKStep = args->RKStep;
 	double *intermediateTracerRads = args->intermediateTracerRads;
 	int numTracers = args->numTracers;
+	pthread_mutex_t *mutex = args->mutex;
 	
 	
 	double k1_x = 0, k2_x = 0, k3_x = 0, k4_x = 0;
@@ -455,9 +456,16 @@ void *stepForwardVortexRK4(void *arguments) {
 		}
 		
 		long radiiIndex = calculateVortexRadiiIndex(vortIndex, vortices[j].vIndex);
-		// there is probably a cleverer way to do this to avoid having to copy radii into workingRadii every timestep
 		// Whether we add or subtract d_dj from radii depends on which index is larger.
-		pthread_mutex_lock(&(vort->velocityMutex));
+		
+		// TODO: come up with a more elegant way to synchronize this. I am not writing to the same places usually,\
+		// no reason to block *everything*
+		
+		// pthread_mutex_lock(&(vort->velocityMutex));
+		// pthread_mutex_lock(&(vortices[j].velocityMutex));
+		
+		int e = pthread_mutex_lock(mutex);
+		
 		if (vort->vIndex < vortices[j].vIndex) {
 			workingRadii[radiiIndex + 1] -= dxdj*timestep;
 			workingRadii[radiiIndex + 2] -= dydj*timestep;
@@ -467,7 +475,9 @@ void *stepForwardVortexRK4(void *arguments) {
 		}
 		
 		workingRadii[radiiIndex] = sqrt(pow(workingRadii[radiiIndex+1], 2) + pow(workingRadii[radiiIndex+2], 2));
-		pthread_mutex_unlock(&(vort->velocityMutex));
+		pthread_mutex_unlock(mutex);
+		// pthread_mutex_unlock(&(vort->velocityMutex));
+		// pthread_mutex_unlock(&(vortices[j].velocityMutex));
 	}
 	
 	for (int tracerI = 0; tracerI < numTracers; tracerI++) {
@@ -507,6 +517,8 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 	
 	double *workingRadii = malloc(vortRadSize);
 	memcpy(workingRadii, vortRadii, vortRadSize);
+	pthread_mutex_t radMutex;
+	pthread_mutex_init(&radMutex, NULL);
 	double *intermediateRadii = malloc(vortRadSize);
 	memcpy(intermediateRadii, vortRadii, vortRadSize);
 	
@@ -582,12 +594,19 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 			struct VortexArgs *args = malloc(sizeof(struct VortexArgs));
 			args->RKStep = RKStep;
 			args->vortices = vortices;
+			args->originVortIndex = originVortIndex;
 			args->intermediateRadii = intermediateRadii;
 			args->workingRadii = workingRadii;
 			args->vortRadLen = vortRadLen;
 			args->intermediateTracerRads = intermediateTracerRads;
 			args->numTracers = NUM_TRACERS;
+			args->mutex = &radMutex;
+			
+			thpool_add_work(thpool, stepForwardVortexRK4, args);
 		}
+
+		
+		thpool_wait(thpool);
 
 		memcpy(intermediateRadii, workingRadii, vortRadSize);
 		memcpy(workingRadii, vortRadii, vortRadSize);
@@ -610,6 +629,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 	free(workingRadii);
 	free(intermediateRadii);
 	free(intermediateTracerRads);
+	pthread_mutex_destroy(&radMutex);
 }
 
 #pragma mark - Vortex Lifecycle
@@ -938,9 +958,9 @@ int calcSpawnCount() {
 void termination_handler(int sig) {
 #ifdef SAVE_RAWDATA
 	closeFile();
+#endif
 	signal(sig, SIG_DFL);
 	raise(sig);
-#endif
 }
 
 #pragma mark - Main
@@ -1006,9 +1026,9 @@ int main(int argc, const char * argv[]) {
 		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
 	}
 	
-	for (int i = 0; i < numDriverVorts; i++) {
-		pthread_mutex_init(&(vortices[i].velocityMutex), NULL);
-	}
+	// for (int i = 0; i < numDriverVorts; i++) {
+	// 	pthread_mutex_init(&(vortices[i].velocityMutex), NULL);
+	// }
 	
 	/******************* main loop *******************/
 	

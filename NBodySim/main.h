@@ -15,7 +15,7 @@ struct Vortex {
 	
 	double intensity;
 	double *position;
-	pthread_mutex_t velocityMutex;
+	// pthread_mutex_t velocityMutex;
 	double *velocity; // this is change in coord. per time step
 };
 
@@ -44,6 +44,7 @@ struct VortexArgs {
 	long vortRadLen;
 	double *intermediateTracerRads;
 	int numTracers;
+	pthread_mutex_t *mutex;
 };
 
 #endif /* main_h */
