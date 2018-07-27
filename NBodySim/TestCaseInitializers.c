@@ -43,15 +43,15 @@ void initialize_pair_parallel_test(struct Vortex *vortices, int n) {
 	vortices[0].vIndex = 0;
 	vortices[0].velocity = malloc(sizeof(double) * 2);
 	vortices[0].position = malloc(sizeof(double) * 2);
-	vortices[0].position[0] = DOMAIN_SIZE_X/2 - 2;
-	vortices[0].position[1] = DOMAIN_SIZE_Y/2;
+	vortices[0].position[0] = DOMAIN_SIZE_X/2 + 4;
+	vortices[0].position[1] = DOMAIN_SIZE_Y/2 + 4;
 	vortices[0].intensity = -vortMagnitude;
 	vortices[0].initStep = 0;
 	
 	vortices[1].vIndex = 1;
 	vortices[1].velocity = malloc(sizeof(double) * 2);
 	vortices[1].position = malloc(sizeof(double) * 2);
-	vortices[1].position[0] = DOMAIN_SIZE_X/2 + 2;
+	vortices[1].position[0] = DOMAIN_SIZE_X/2;
 	vortices[1].position[1] = DOMAIN_SIZE_Y/2;
 	vortices[1].intensity = vortMagnitude;
 	vortices[1].initStep = 0;

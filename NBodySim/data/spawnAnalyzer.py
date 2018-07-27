@@ -41,7 +41,6 @@ reg = re.compile("""spawning (\d+) vorts""")
 matches = [reg.search(line) for line in f]
 matches = [match for match in matches if match != None]
 spawnRateData = [int(match.group(1)) for match in matches]
-
 print("mean num spawns/step: " + str(mean(spawnRateData)))
 
 f.seek(0) #reset file

@@ -19,17 +19,17 @@
  5:		single vort initializer	(1)
  6:		tracer accuracy test	(2) (1 tracer)
  */
-#define TEST_CASE 0
+#define TEST_CASE 2
 
 #if !defined(CONSOLE_H) || !defined(CONSOLE_W)
-#define CONSOLE_W 212 // character dimensions to draw to console
-#define CONSOLE_H 106
+#define CONSOLE_W 200 // character dimensions to draw to console
+#define CONSOLE_H 100
 #endif
 
 // render mode selection
 //#define DRAW_CONSOLE
 #define DRAW_PDF
-#define SAVE_RAWDATA
+//#define SAVE_RAWDATA
 
 #define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
@@ -46,7 +46,7 @@
 #endif
 
 #define NUM_TRACERS 1 // NOTE: must be a square number
-#define NUM_VORT_INIT 800
+#define NUM_VORT_INIT 2
 #define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
 
 #define VORTEX_LIFECYCLE
@@ -56,8 +56,4 @@
 
 #define THREADCOUNT 1
 
-#endif /*
-constants_h
-
-void deleteVortex(struct Vortex *vort, double *vortexRadii, int *numActiveVorts, struct Vortex *vorts, int numVorts) {
- */
+#endif

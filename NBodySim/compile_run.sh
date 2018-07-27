@@ -10,7 +10,7 @@ time ./data/simulator
 
 ffmpeg -f image2 -r 24 -pattern_type glob -i './data/outputImages/*.png' ./data/output.mp4
 
-if [ $autoplay = true ]; then
+if [ ${autoplay:-false} = true ]; then
 	if [ $(uname) = "Darwin" ]; then
 		open ./data/output.mp4
 	else

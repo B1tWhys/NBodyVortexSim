@@ -19,7 +19,7 @@ if [ "${mode:-unset}" = "debug" ]; then
 	printf "Compiling debug version.\nTo compile for production, run: 'export mode=prod' then then recompile\n"
 	# args="$args -g -O0 -DDEBUG"
 	args="$args -g -O0"
-elif [ "${mode:-unset}" = "prof"]; then
+elif [ "${mode:-unset}" = "prof" ]; then
 		printf "Compiling profiling version."
 		
 		args="$args -g -O3"

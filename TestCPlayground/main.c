@@ -23,53 +23,56 @@ double generateUniformRandInRange(double lowerBound, double upperBound) { // ran
 	return result;
 }
 
-int generatePoissonRand(double k, double lambda, double x) {
-	double p, s, u;
-	x = 0;
-	p = pow(M_E, -lambda);
-	s = p;
-	
-	u = generateUniformRandInRange(0, 1);
-	
-	while (u > s) {
-		x++;
-		p = (p * lambda) / x;
-		s += p;
+
+double nextNum = NAN;
+
+double generateNormalRand(double sigma) {
+	if (nextNum == NAN) {// if there is a number left over from last time, cache it, clear nextNum, and return the value.
+		double val = nextNum;
+		nextNum = NAN;
+		return val;
 	}
-	return x;
+	
+	double s, R, u, v;
+	
+	while (1) { // generate u & v until s is in (0, 1]
+		u = generateUniformRandInRange(-1, 1);
+		v = generateUniformRandInRange(-1, 1);
+		
+		s = pow(u, 2) + pow(v, 2);
+		if (s != 0 && s < 1) break;
+	}
+	
+	R = pow(s, 2);
+	double multiplier = sqrt(-2.*log(s) / s);
+	nextNum = u * multiplier;
+	return v * multiplier;
 }
 
 void testFunc() {
 	int n = 100000;
-	int distArr[100];
+	float resultsArr[n];
 	int totalSpawned = 0;
-	for (int i = 0; i < 100; i++) distArr[i] = 0;
+	for (int i = 0; i < n; i++) resultsArr[i] = 0;
 
 	for (int i = 0; i < n; i++) {
-		int val = generatePoissonRand(0, 1., 0);
-		totalSpawned += val;
-		distArr[val]++;
+		float val = generateNormalRand(1.);
+		resultsArr[i] = val;
 	}
 
-	for (int i = 0; i < 10; i++) {
-		printf("%i: %f\n", i, distArr[i]/(float)n);
+	for (float cutoff = -5; cutoff < 5; cutoff++) {
+		int count = 0;
+		for (int i = 0; i < n; i++) {
+			if (resultsArr[i] > cutoff && resultsArr[i] < (cutoff + 1)) count++;
+		}
+		printf("%i between %2.0f and %2.0f\n", count, cutoff, cutoff+1);
 	}
-
-	printf("\n\ntotalSpawned: %i\n", totalSpawned);
 }
-
-//void testFunc() {
-//	for (int i = 0; i < 5; i++) {
-////		printf("%i\n", generatePoissonRand(0, 1., 0));
-//		printf("%f\n", generateUniformRandInRange(0, 1));
-//	}
-//}
 
 #pragma mark - main
 
 int main(int argc, const char * argv[]) {
-	test = time(0);
-	srand((unsigned int)test);
+	srand((unsigned int)time(0));
 	testFunc();
 	
 	return 0;

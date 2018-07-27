@@ -22,7 +22,7 @@
 #include <limits.h>
 #include <signal.h>
 
-#undef DEBUG
+//#undef DEBUG
 
 unsigned int randomSeed;
 double timestep = TIMESTEP_CONST;
@@ -896,7 +896,6 @@ int calcSpawnCount() {
 //	return 12;
 	
 	if ((1)) {
-		
 		double spawnCount = carryoverSpawnCount + VORTEX_SPAWN_RATE * timestep;
 		if (spawnCount > 1) {
 			carryoverSpawnCount = fmod(spawnCount, 1.);
@@ -1033,6 +1032,7 @@ int main(int argc, const char * argv[]) {
 		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
 		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, 0, &totalMergeCount);
 		fprintf(stderr, "timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMergeCount);
+		printf("timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMergeCount);
 #endif
 		stepForward_RK4(vortices, vortexRadii, tracerRadii, tracers, NUM_TRACERS);
 		wrapPositions(vortices, tracers, NUM_TRACERS);
@@ -1040,8 +1040,12 @@ int main(int argc, const char * argv[]) {
 		
 		clock_gettime(CLOCK_MONOTONIC, &endTime);
 		double sec = (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
+#ifdef VORTEX_LIFECYCLE
 		printf("Step number %i calculation complete in %f sec with %i vortices\n", currentTimestep, sec, numDriverVorts);
 		fprintf(stderr, "Step number %i calculation complete in %f sec with %i vortices\n", currentTimestep, sec, numDriverVorts);
+#else
+		printf("Step number %i calculation complete in %f sec with %i vortices\n", currentTimestep, sec, numDriverVorts);
+#endif
 		
 #ifdef SAVE_RAWDATA // the location of this save might be responsable for an OB1 error.
 		if (currentTimestep == 0) openFile();
@@ -1053,7 +1057,6 @@ int main(int argc, const char * argv[]) {
 				  vortices,
 				  tracers);
 #endif
-		
 		currentTimestep++;
 	}
 	

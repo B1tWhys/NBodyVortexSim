@@ -83,7 +83,7 @@ void drawToFile(struct Vortex *vorts, int numVorts, struct Tracer *tracers, char
 		
 		double xPos = IMAGE_W * vort->position[0] / DOMAIN_SIZE_X;
 		double yPos = IMAGE_H * vort->position[1] / DOMAIN_SIZE_Y;
-		double rad = fabs(vort->intensity) * VORTEX_DRAW_SIZE_CONST * (IMAGE_W/1000.);
+		double rad = sqrt(fabs(vort->intensity)) * VORTEX_DRAW_SIZE_CONST * (IMAGE_W/1000.);
 		
 		if (vort->intensity > 0) {
 			cairo_set_source_rgb(cr, 1, 0, 0);
