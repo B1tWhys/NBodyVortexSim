@@ -7,12 +7,15 @@
 #ifndef main_h
 #define main_h
 
+#include <pthread.h>
+
 struct Vortex {
 	int vIndex;
 	int initStep;
 	
 	double intensity;
 	double *position;
+	pthread_mutex_t velocityMutex;
 	double *velocity; // this is change in coord. per time step
 };
 
@@ -30,6 +33,17 @@ struct TracerArgs {
 	double *tracerRadii;
 	double *intermediateTracerRads;
 	struct Vortex *vortices;
+};
+
+struct VortexArgs {
+	int RKStep;
+	struct Vortex *vortices;
+	int originVortIndex;
+	double *intermediateRadii;
+	double *workingRadii;
+	long vortRadLen;
+	double *intermediateTracerRads;
+	int numTracers;
 };
 
 #endif /* main_h */
