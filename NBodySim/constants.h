@@ -47,7 +47,7 @@
 
 #define NUM_TRACERS 900 // NOTE: must be a square number
 #define NUM_VORT_INIT 800
-#define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
+#define FIRST_SEED 1532673876 // seed the sim. -1 to use current unix time stamp
 
 // #define VORTEX_LIFECYCLE
 #define VORTEX_INTENSITY_SIGMA 0.21233045007200477

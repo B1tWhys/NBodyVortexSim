@@ -366,7 +366,7 @@ void stepForwardTracerRK4(void *arguments) {
 	free(arguments);
 }
 
-void *stepForwardVortexRK4(void *arguments) {
+void stepForwardVortexRK4(void *arguments) {
 	struct VortexArgs *args = arguments;
 	struct Vortex *vortices = args->vortices;
 	int originVortIndex = args->originVortIndex;
@@ -582,12 +582,18 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 			struct VortexArgs *args = malloc(sizeof(struct VortexArgs));
 			args->RKStep = RKStep;
 			args->vortices = vortices;
+			args->originVortIndex = originVortIndex;
 			args->intermediateRadii = intermediateRadii;
 			args->workingRadii = workingRadii;
 			args->vortRadLen = vortRadLen;
 			args->intermediateTracerRads = intermediateTracerRads;
 			args->numTracers = NUM_TRACERS;
+			
+			thpool_add_work(thpool, stepForwardVortexRK4, args);
 		}
+
+		
+		thpool_wait(thpool);
 
 		memcpy(intermediateRadii, workingRadii, vortRadSize);
 		memcpy(workingRadii, vortRadii, vortRadSize);
