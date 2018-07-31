@@ -31,7 +31,7 @@
 // render mode selection
 // #define DRAW_CONSOLE
 #define DRAW_PDF
-#define SAVE_RAWDATA
+//#define SAVE_RAWDATA
 
 #define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
@@ -48,13 +48,13 @@
 #endif
 
 #define NUM_TRACERS 1 // NOTE: must be a square number
-#define NUM_VORT_INIT 800
+#define NUM_VORT_INIT 64
 #define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
 
 #define VORTEX_LIFECYCLE
 #define VORTEX_INTENSITY_SIGMA 0.21233045007200477
 #define VORTEX_SPAWN_RATE 2.56
-#define VORTEX_MERGE_RADIUS 1/(2*M_PI)
+#define VORTEX_MERGE_RADIUS 1
 
 #define THREADCOUNT 8
 

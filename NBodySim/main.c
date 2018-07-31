@@ -1,4 +1,8 @@
 //
+
+/*
+ use 2pi in v function, merge at 1, multiply sigma by 2pi
+ */
 //  main.c
 //  NBodySim
 //
@@ -91,7 +95,6 @@ void updateRadii_pythagorean(double *vortexRadii, struct Vortex *vortices, doubl
 
 			vortexRadii[index+1] = vortices[i].position[0] - vortices[j].position[0];
 			vortexRadii[index+2] = vortices[i].position[1] - vortices[j].position[1];
-			double rad = sqrt(pow(vortexRadii[index+1], 2.) + pow(vortexRadii[index+2], 2.));
 			vortexRadii[index] = sqrt(pow(vortexRadii[index+1], 2.) + pow(vortexRadii[index+2], 2.));
 		}
 	}
@@ -376,8 +379,6 @@ void stepForwardVortexRK4(void *arguments) {
 	int RKStep = args->RKStep;
 	double *intermediateTracerRads = args->intermediateTracerRads;
 	int numTracers = args->numTracers;
-	pthread_mutex_t *mutex = args->mutex;
-	
 	
 	double k1_x = 0, k2_x = 0, k3_x = 0, k4_x = 0;
 	double k1_y = 0, k2_y = 0, k3_y = 0, k4_y = 0;
@@ -455,29 +456,57 @@ void stepForwardVortexRK4(void *arguments) {
 			continue;
 		}
 		
+//		bool __atomic_compare_exchange (type *ptr, type *expected, type *desired, bool weak, int success_memorder, int failure_memorder)
+		
 		long radiiIndex = calculateVortexRadiiIndex(vortIndex, vortices[j].vIndex);
-		// Whether we add or subtract d_dj from radii depends on which index is larger.
 		
-		// TODO: come up with a more elegant way to synchronize this. I am not writing to the same places usually,\
-		// no reason to block *everything*
 		
-		// pthread_mutex_lock(&(vort->velocityMutex));
-		// pthread_mutex_lock(&(vortices[j].velocityMutex));
-		
-		int e = pthread_mutex_lock(mutex);
-		
-		if (vort->vIndex < vortices[j].vIndex) {
-			workingRadii[radiiIndex + 1] -= dxdj*timestep;
-			workingRadii[radiiIndex + 2] -= dydj*timestep;
-		} else {
-			workingRadii[radiiIndex + 1] += dxdj*timestep;
-			workingRadii[radiiIndex + 2] += dydj*timestep;
+		if (vortIndex != vortices[j].otherVort) {
+			vort->otherVort++;
 		}
 		
-		workingRadii[radiiIndex] = sqrt(pow(workingRadii[radiiIndex+1], 2) + pow(workingRadii[radiiIndex+2], 2));
-		pthread_mutex_unlock(mutex);
-		// pthread_mutex_unlock(&(vort->velocityMutex));
-		// pthread_mutex_unlock(&(vortices[j].velocityMutex));
+		
+		// FIXME: do this shit and shit
+		
+		// Whether we add or subtract d_dj from radii depends on which index is larger.
+		
+		char addVals = vort->vIndex > vortices[j].vIndex;
+		
+		double oldXRad, oldYRad, oldRadMag;
+		
+		__atomic_load(&workingRadii[radiiIndex + 1], &oldXRad, __ATOMIC_SEQ_CST);
+		double newXRad;
+		do {
+			newXRad = addVals ? oldXRad + dxdj*timestep : oldXRad - dxdj*timestep;
+		} while (!__atomic_compare_exchange(&workingRadii[radiiIndex + 1], &oldXRad, &newXRad, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
+		
+		
+		__atomic_load(&workingRadii[radiiIndex + 2], &oldYRad, __ATOMIC_SEQ_CST);
+		double newYRad;
+		do {
+			newYRad = addVals ? oldYRad + dxdj*timestep : oldYRad - dxdj*timestep;
+		} while (!__atomic_compare_exchange(&workingRadii[radiiIndex + 2], &oldXRad, &newXRad, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
+		
+		__atomic_thread_fence(__ATOMIC_SEQ_CST); // not sure if this is neccessary
+		
+		__atomic_load(&workingRadii[radiiIndex], &oldRadMag, __ATOMIC_SEQ_CST);
+		double newRadMag;
+		do {
+			__atomic_load(&workingRadii[radiiIndex + 1], &newXRad, __ATOMIC_SEQ_CST);
+			__atomic_load(&workingRadii[radiiIndex + 2], &newYRad, __ATOMIC_SEQ_CST);
+			newRadMag = sqrt(pow(newXRad, 2) + pow(newYRad, 2));
+		} while (!__atomic_compare_exchange(&workingRadii[radiiIndex], &oldRadMag, &newRadMag, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
+		
+//
+//		if (vort->vIndex < vortices[j].vIndex) {
+//			newXRad = oldXRad - dxdj*timestep;
+//			newYRad = oldYRad - dydj*timestep;
+//		} else {
+//			newXRad = oldXRad + dxdj*timestep;
+//			newYRad = oldYRad + dydj*timestep;
+//		}
+//
+//		workingRadii[radiiIndex] = sqrt(pow(workingRadii[radiiIndex+1], 2) + pow(workingRadii[radiiIndex+2], 2));
 	}
 	
 	for (int tracerI = 0; tracerI < numTracers; tracerI++) {
@@ -541,7 +570,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 	
 	for (int RKStep = 1; RKStep <= 4; RKStep++) {
 		
-		double dxdj = 0, dydj = 0;
+//		double dxdj = 0, dydj = 0;
 		
 		// tracer multithreading
 		int tracersPerThread = NUM_TRACERS/THREADCOUNT;
@@ -600,7 +629,6 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 			args->vortRadLen = vortRadLen;
 			args->intermediateTracerRads = intermediateTracerRads;
 			args->numTracers = NUM_TRACERS;
-			args->mutex = &radMutex;
 			
 			thpool_add_work(thpool, stepForwardVortexRK4, args);
 		}
@@ -978,6 +1006,7 @@ int main(int argc, const char * argv[]) {
 		randomSeed = FIRST_SEED;
 	}
 	
+	
 	srand(randomSeed);
 	
 	currentTimestep = 0;
@@ -1014,7 +1043,7 @@ int main(int argc, const char * argv[]) {
 		
 		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
 		// Generate vortices so that they don't end up being merged on the first timestep.
-		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, INT_MAX, NULL);
+//		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, INT_MAX, NULL);
 	} else {
 		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, NUM_VORT_INIT);
 		initialize_test(vortices, numDriverVorts);
@@ -1075,6 +1104,7 @@ int main(int argc, const char * argv[]) {
 		
 #ifdef VORTEX_LIFECYCLE
 		int numSpawns = calcSpawnCount();
+		fprintf(stderr, "spawning %i vorts\n", numSpawns);
 		printf("spawning %i vorts\n", numSpawns);
 		int totalMergeCount = 0;
 		int spawnsLeft = mergeVorts(vortexRadii, vortices, tracerRadii, tracers, numSpawns, &totalMergeCount);
