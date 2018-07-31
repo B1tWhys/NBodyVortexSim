@@ -485,7 +485,7 @@ void stepForwardVortexRK4(void *arguments) {
 		double newYRad;
 		do {
 			newYRad = addVals ? oldYRad + dxdj*timestep : oldYRad - dxdj*timestep;
-		} while (!__atomic_compare_exchange(&workingRadii[radiiIndex + 2], &oldXRad, &newXRad, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
+		} while (!__atomic_compare_exchange(&workingRadii[radiiIndex + 2], &oldYRad, &newYRad, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
 		
 		__atomic_thread_fence(__ATOMIC_SEQ_CST); // not sure if this is neccessary
 		
