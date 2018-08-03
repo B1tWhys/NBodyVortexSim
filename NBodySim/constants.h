@@ -30,8 +30,9 @@
 
 // render mode selection
 // #define DRAW_CONSOLE
-// #define DRAW_PDF
-#define SAVE_RAWDATA
+#define DRAW_PDF
+// #define SAVE_RAWDATA
+// #define DATA_FILEPATH "/media/externalDrive/laspData/30k_2/rawData"
 
 #define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
@@ -44,7 +45,7 @@
 #define TIMESTEP_CONST .01
 #define RENDER_NTH_STEP 1 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS
-#define NUMBER_OF_STEPS 30000 // number of time steps to simulate. 0 to loop forever
+#define NUMBER_OF_STEPS 5 // number of time steps to simulate. 0 to loop forever
 #endif
 
 #define NUM_TRACERS 900 // NOTE: must be a square number
@@ -52,10 +53,10 @@
 #define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
 
 #define VORTEX_LIFECYCLE
-#define VORTEX_INTENSITY_SIGMA 0.21233045007200477
+#define VORTEX_INTENSITY_SIGMA 0.21233045007200477 * 2 * M_PI
 #define VORTEX_SPAWN_RATE 2.56
 #define VORTEX_MERGE_RADIUS 1
 
-#define THREADCOUNT 8
+#define THREADCOUNT 2
 
 #endif

@@ -120,8 +120,8 @@ void updateRadii_pythagorean(double *vortexRadii, struct Vortex *vortices, doubl
  @return the magnitude of the velocity vector resulting from the interaction of the other vortex on the current vortex
  */
 double velocityFunc(double vortex2Intensity, double radius) {
-//	return vortex2Intensity/(2.*M_PI*radius);
-	return vortex2Intensity/radius;
+	return vortex2Intensity/(2.*M_PI*radius);
+	// return vortex2Intensity/radius;
 }
 
 #pragma mark - RK4 Functions
@@ -497,16 +497,7 @@ void stepForwardVortexRK4(void *arguments) {
 			newRadMag = sqrt(pow(newXRad, 2) + pow(newYRad, 2));
 		} while (!__atomic_compare_exchange(&workingRadii[radiiIndex], &oldRadMag, &newRadMag, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
 		
-//
-//		if (vort->vIndex < vortices[j].vIndex) {
-//			newXRad = oldXRad - dxdj*timestep;
-//			newYRad = oldYRad - dydj*timestep;
-//		} else {
-//			newXRad = oldXRad + dxdj*timestep;
-//			newYRad = oldYRad + dydj*timestep;
-//		}
-//
-//		workingRadii[radiiIndex] = sqrt(pow(workingRadii[radiiIndex+1], 2) + pow(workingRadii[radiiIndex+2], 2));
+		free(arguments);
 	}
 	
 	for (int tracerI = 0; tracerI < numTracers; tracerI++) {
@@ -618,7 +609,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 		}
 		
 		/********* end of tracer step code **************/
-			
+		
 		for (int originVortIndex = 0; originVortIndex < numDriverVorts; originVortIndex++) {
 			struct VortexArgs *args = malloc(sizeof(struct VortexArgs));
 			args->RKStep = RKStep;
@@ -1156,6 +1147,8 @@ int main(int argc, const char * argv[]) {
 	free(tracers);
 	free(vortexRadii);
 	free(tracerRadii);
+	thpool_destroy(thpool);
+	
 #ifdef SAVE_RAWDATA
 	closeFile();
 #endif

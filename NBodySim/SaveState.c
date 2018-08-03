@@ -3,9 +3,10 @@
 //  NBodySim
 //
 
+#include "constants.h"
 #include "SaveState.h"
-
 #include <stdio.h>
+
 
 /*
  File Format:
@@ -35,7 +36,7 @@ FILE *file;
 
 void openFile() {
 	// file = fopen("./data/rawData", "a");
-	file = fopen("/media/externalDrive/laspData/rawData", "a");
+	file = fopen(DATA_FILEPATH, "w");
 }
 
 void saveState(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {

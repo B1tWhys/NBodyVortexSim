@@ -11,6 +11,10 @@
 #include "main.h"
 
 #include <stdio.h>
+#ifndef DATA_FILEPATH
+#define DATA_FILEPATH "./rawData"
+#endif
+
 
 void openFile(void);
 void saveState(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers);
