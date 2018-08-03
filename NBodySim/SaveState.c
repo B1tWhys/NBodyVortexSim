@@ -10,7 +10,7 @@
 /*
  File Format:
  
- Step #,Time,Seed Val,#vorts,#tracers
+ <GS>Step #,Time,Seed Val,#vorts,#tracers
  <RS>vIndex,xPos,yPos,xVel,yVel,Intensity,spawnStep
  vIndex,xPos,yPos,xVel,yVel,Intensity,spawnStep
  vIndex,xPos,yPos,xVel,yVel,Intensity,spawnStep
@@ -34,12 +34,13 @@
 FILE *file;
 
 void openFile() {
-	file = fopen("./data/rawData", "a");
+	// file = fopen("./data/rawData", "a");
+	file = fopen("/media/externalDrive/laspData/rawData", "a");
 }
 
 void saveState(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
-	fprintf(file, "%i,%f,%u,%i,%i\n", timestep, currentTime, currentSeed, numVorts, numTracers);
-	fputc(30, file);
+	fprintf(file, "\x1D%i,%f,%u,%i,%i\n", timestep, currentTime, currentSeed, numVorts, numTracers);
+	fputc(0x1E, file);
 	for (int i = 0; i < numVorts; i++) {
 		struct Vortex *vort = &vorts[i];
 		fprintf(file,
@@ -52,7 +53,7 @@ void saveState(int timestep, double currentTime, unsigned int currentSeed, int n
 				vort->intensity,
 				vort->initStep);
 	}
-	fputc(30, file);
+	fputc(0x1E, file);
 	
 	for (int i = 0; i < numTracers; i++) {
 		struct Tracer *tracer = &tracers[i];
@@ -65,7 +66,7 @@ void saveState(int timestep, double currentTime, unsigned int currentSeed, int n
 				tracer->velocity[1]);
 	}
 	
-	fputc(29, file);
+	// fputc(29, file);
 }
 
 void closeFile() {

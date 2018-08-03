@@ -12,47 +12,14 @@
 #include <time.h>
 #include <limits.h>
 #include <signal.h>
+#include "RNG.h"
 
 time_t test;
 
-
-double generateUniformRandInRange(double lowerBound, double upperBound) { // range is inclusive on both ends
-	// TODO: investigate whether there's an off by 1 error in here
-	double range = upperBound-lowerBound;
-	double result = ((double)rand()/RAND_MAX)*range + lowerBound;
-	return result;
-}
-
-
-double nextNum = NAN;
-
-double generateNormalRand(double sigma) {
-	if (nextNum == NAN) {// if there is a number left over from last time, cache it, clear nextNum, and return the value.
-		double val = nextNum;
-		nextNum = NAN;
-		return val;
-	}
-	
-	double s, R, u, v;
-	
-	while (1) { // generate u & v until s is in (0, 1]
-		u = generateUniformRandInRange(-1, 1);
-		v = generateUniformRandInRange(-1, 1);
-		
-		s = pow(u, 2) + pow(v, 2);
-		if (s != 0 && s < 1) break;
-	}
-	
-	R = pow(s, 2);
-	double multiplier = sqrt(-2.*log(s) / s);
-	nextNum = u * multiplier;
-	return v * multiplier;
-}
-
-void testFunc() {
+void testNormal() {
 	int n = 100000;
 	float resultsArr[n];
-	int totalSpawned = 0;
+//	int totalSpawned = 0;
 	for (int i = 0; i < n; i++) resultsArr[i] = 0;
 
 	for (int i = 0; i < n; i++) {
@@ -69,11 +36,41 @@ void testFunc() {
 	}
 }
 
+void testPoisson() {
+	int n = 10000;
+	int data[100];
+	for (int i = 0; i < 100; i++) data[i] = 0;
+	
+	for (int i = 0; i < n; i++) {
+		int val = generatePoissonRand(0, 2.56, 0);
+		data[val]++;
+		printf("%i ", val);
+	}
+	printf("\n");
+	float sum = 0;
+	for (int i = 0; i < 15; i++) {
+		printf("%i: %i\n", i, data[i]);
+		sum += i*data[i];
+	}
+	
+	printf("avg: %f", sum/10000);
+}
+
 #pragma mark - main
 
 int main(int argc, const char * argv[]) {
-	srand((unsigned int)time(0));
-	testFunc();
+//	srand((unsigned int)time(0));
+//	testNormal();
+//	testPoisson();
+	
+	
+	int var1 = 0;
+	int var2 = 1;
+	int var3 = 2;
+	// bool __atomic_compare_exchange_n (type *ptr, type *expected, type desired, bool weak, int success_memorder, int failure_memorder)
+	__atomic_compare_exchange_n(&var1, &var2, var3, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+	
+	printf("1: %i\n2: %i\n3: %i\n", var1, var2, var3);
 	
 	return 0;
 }

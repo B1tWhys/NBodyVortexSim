@@ -15,8 +15,8 @@ struct Vortex {
 	
 	double intensity;
 	double *position;
-	pthread_mutex_t velocityMutex;
 	double *velocity; // this is change in coord. per time step
+	volatile int otherVort;
 };
 
 struct Tracer {
