@@ -10,7 +10,9 @@
 		D41DAF0B2102A2F40076F0EF /* TestCaseInitializers.c in Sources */ = {isa = PBXBuildFile; fileRef = D41DAF0A2102A2F40076F0EF /* TestCaseInitializers.c */; };
 		D457F141210674FF00711CBD /* SaveState.c in Sources */ = {isa = PBXBuildFile; fileRef = D457F140210674FF00711CBD /* SaveState.c */; };
 		D4A383F321011F14009D21FF /* libpthread.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4A383F221011F14009D21FF /* libpthread.tbd */; };
+		D4A541CE210BD27600815FAA /* RNG.c in Sources */ = {isa = PBXBuildFile; fileRef = D4B45D25210800B10058410B /* RNG.c */; };
 		D4B45D26210800B10058410B /* RNG.c in Sources */ = {isa = PBXBuildFile; fileRef = D4B45D25210800B10058410B /* RNG.c */; };
+		D4C9C148210BCA4E00229D3A /* thpool.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C9C147210BCA3700229D3A /* thpool.c */; };
 		D4CCD22020EBB2C20059D986 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD20520EBB2480059D986 /* main.c */; };
 		D4CCD22120EBB32E0059D986 /* guiOutput.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD20320EBB2480059D986 /* guiOutput.c */; };
 		D4E3FF7D20EBB67A00B4A0EA /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = D4CCD1FF20EBB2480059D986 /* main.c */; };
@@ -46,6 +48,30 @@
 		D4A383F221011F14009D21FF /* libpthread.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libpthread.tbd; path = usr/lib/libpthread.tbd; sourceTree = SDKROOT; };
 		D4B45D24210800B10058410B /* RNG.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNG.h; sourceTree = "<group>"; };
 		D4B45D25210800B10058410B /* RNG.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = RNG.c; sourceTree = "<group>"; };
+		D4C9C12C210BCA3700229D3A /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		D4C9C12D210BCA3700229D3A /* thpool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = thpool.h; sourceTree = "<group>"; };
+		D4C9C12F210BCA3700229D3A /* funcs.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = funcs.sh; sourceTree = "<group>"; };
+		D4C9C130210BCA3700229D3A /* memleaks.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = memleaks.sh; sourceTree = "<group>"; };
+		D4C9C131210BCA3700229D3A /* api.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = api.sh; sourceTree = "<group>"; };
+		D4C9C132210BCA3700229D3A /* normal_compile.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = normal_compile.sh; sourceTree = "<group>"; };
+		D4C9C133210BCA3700229D3A /* heap_stack_garbage.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = heap_stack_garbage.sh; sourceTree = "<group>"; };
+		D4C9C134210BCA3700229D3A /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		D4C9C136210BCA3700229D3A /* memleak.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = memleak.c; sourceTree = "<group>"; };
+		D4C9C137210BCA3700229D3A /* optimized_compile.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = optimized_compile.sh; sourceTree = "<group>"; };
+		D4C9C138210BCA3700229D3A /* wait.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = wait.sh; sourceTree = "<group>"; };
+		D4C9C139210BCA3700229D3A /* threadpool.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = threadpool.sh; sourceTree = "<group>"; };
+		D4C9C13A210BCA3700229D3A /* pause_resume.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = pause_resume.sh; sourceTree = "<group>"; };
+		D4C9C13C210BCA3700229D3A /* pause_resume.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = pause_resume.c; sourceTree = "<group>"; };
+		D4C9C13D210BCA3700229D3A /* api.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = api.c; sourceTree = "<group>"; };
+		D4C9C13E210BCA3700229D3A /* nonzero_heap_stack.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = nonzero_heap_stack.c; sourceTree = "<group>"; };
+		D4C9C13F210BCA3700229D3A /* conc_increment.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = conc_increment.c; sourceTree = "<group>"; };
+		D4C9C140210BCA3700229D3A /* no_work.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = no_work.c; sourceTree = "<group>"; };
+		D4C9C141210BCA3700229D3A /* wait.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = wait.c; sourceTree = "<group>"; };
+		D4C9C143210BCA3700229D3A /* FAQ.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FAQ.md; sourceTree = "<group>"; };
+		D4C9C144210BCA3700229D3A /* Design.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Design.md; sourceTree = "<group>"; };
+		D4C9C145210BCA3700229D3A /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		D4C9C146210BCA3700229D3A /* example.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = example.c; sourceTree = "<group>"; };
+		D4C9C147210BCA3700229D3A /* thpool.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = thpool.c; sourceTree = "<group>"; };
 		D4CCD1FF20EBB2480059D986 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		D4CCD20120EBB2480059D986 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 		D4CCD20320EBB2480059D986 /* guiOutput.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = guiOutput.c; sourceTree = "<group>"; };
@@ -77,6 +103,70 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D4C9C12B210BCA3700229D3A /* C-Thread-Pool */ = {
+			isa = PBXGroup;
+			children = (
+				D4C9C12C210BCA3700229D3A /* LICENSE */,
+				D4C9C12D210BCA3700229D3A /* thpool.h */,
+				D4C9C12E210BCA3700229D3A /* tests */,
+				D4C9C142210BCA3700229D3A /* docs */,
+				D4C9C145210BCA3700229D3A /* README.md */,
+				D4C9C146210BCA3700229D3A /* example.c */,
+				D4C9C147210BCA3700229D3A /* thpool.c */,
+			);
+			name = "C-Thread-Pool";
+			path = "NBodySim/C-Thread-Pool";
+			sourceTree = "<group>";
+		};
+		D4C9C12E210BCA3700229D3A /* tests */ = {
+			isa = PBXGroup;
+			children = (
+				D4C9C12F210BCA3700229D3A /* funcs.sh */,
+				D4C9C130210BCA3700229D3A /* memleaks.sh */,
+				D4C9C131210BCA3700229D3A /* api.sh */,
+				D4C9C132210BCA3700229D3A /* normal_compile.sh */,
+				D4C9C133210BCA3700229D3A /* heap_stack_garbage.sh */,
+				D4C9C134210BCA3700229D3A /* README.md */,
+				D4C9C135210BCA3700229D3A /* ext_bugs */,
+				D4C9C137210BCA3700229D3A /* optimized_compile.sh */,
+				D4C9C138210BCA3700229D3A /* wait.sh */,
+				D4C9C139210BCA3700229D3A /* threadpool.sh */,
+				D4C9C13A210BCA3700229D3A /* pause_resume.sh */,
+				D4C9C13B210BCA3700229D3A /* src */,
+			);
+			path = tests;
+			sourceTree = "<group>";
+		};
+		D4C9C135210BCA3700229D3A /* ext_bugs */ = {
+			isa = PBXGroup;
+			children = (
+				D4C9C136210BCA3700229D3A /* memleak.c */,
+			);
+			path = ext_bugs;
+			sourceTree = "<group>";
+		};
+		D4C9C13B210BCA3700229D3A /* src */ = {
+			isa = PBXGroup;
+			children = (
+				D4C9C13C210BCA3700229D3A /* pause_resume.c */,
+				D4C9C13D210BCA3700229D3A /* api.c */,
+				D4C9C13E210BCA3700229D3A /* nonzero_heap_stack.c */,
+				D4C9C13F210BCA3700229D3A /* conc_increment.c */,
+				D4C9C140210BCA3700229D3A /* no_work.c */,
+				D4C9C141210BCA3700229D3A /* wait.c */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		D4C9C142210BCA3700229D3A /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				D4C9C143210BCA3700229D3A /* FAQ.md */,
+				D4C9C144210BCA3700229D3A /* Design.md */,
+			);
+			path = docs;
+			sourceTree = "<group>";
+		};
 		D4CCD1FD20EBB2480059D986 /* TestCPlayground */ = {
 			isa = PBXGroup;
 			children = (
@@ -125,6 +215,7 @@
 		D4E3FF7E20EBB71100B4A0EA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D4C9C12B210BCA3700229D3A /* C-Thread-Pool */,
 				D4A383F221011F14009D21FF /* libpthread.tbd */,
 				D4E3FF7F20EBB71200B4A0EA /* libcairo.2.dylib */,
 			);
@@ -231,6 +322,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4C9C148210BCA4E00229D3A /* thpool.c in Sources */,
 				D457F141210674FF00711CBD /* SaveState.c in Sources */,
 				D4CCD22120EBB32E0059D986 /* guiOutput.c in Sources */,
 				D4CCD22020EBB2C20059D986 /* main.c in Sources */,
@@ -244,6 +336,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D4E3FF7D20EBB67A00B4A0EA /* main.c in Sources */,
+				D4A541CE210BD27600815FAA /* RNG.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
