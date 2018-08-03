@@ -30,8 +30,8 @@
 
 // render mode selection
 // #define DRAW_CONSOLE
-#define DRAW_PDF
-//#define SAVE_RAWDATA
+// #define DRAW_PDF
+#define SAVE_RAWDATA
 
 #define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
@@ -44,10 +44,10 @@
 #define TIMESTEP_CONST .01
 #define RENDER_NTH_STEP 1 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS
-#define NUMBER_OF_STEPS 2000 // number of time steps to simulate. 0 to loop forever
+#define NUMBER_OF_STEPS 30000 // number of time steps to simulate. 0 to loop forever
 #endif
 
-#define NUM_TRACERS 1 // NOTE: must be a square number
+#define NUM_TRACERS 900 // NOTE: must be a square number
 #define NUM_VORT_INIT 64
 #define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
 

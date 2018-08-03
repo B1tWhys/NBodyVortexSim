@@ -1096,22 +1096,22 @@ int main(int argc, const char * argv[]) {
 			double maxV = maxVelocity(vortices);
 			timestep = minR / maxV * .5;
 			if (timestep > TIMESTEP_CONST || maxV == 0) timestep = TIMESTEP_CONST;
-			time += timestep;
 			
 			if (time > 50) return 0;
 		}
+		time += timestep;
 		clock_gettime(CLOCK_MONOTONIC, &startTime);
 		
 #ifdef VORTEX_LIFECYCLE
 		int numSpawns = calcSpawnCount();
-		fprintf(stderr, "spawning %i vorts\n", numSpawns);
+		// fprintf(stderr, "spawning %i vorts\n", numSpawns);
 		printf("spawning %i vorts\n", numSpawns);
 		int totalMergeCount = 0;
 		int spawnsLeft = mergeVorts(vortexRadii, vortices, tracerRadii, tracers, numSpawns, &totalMergeCount);
 		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, spawnsLeft);
 		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
 		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, 0, &totalMergeCount);
-		fprintf(stderr, "timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMergeCount);
+		// fprintf(stderr, "timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMergeCount);
 		printf("timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMergeCount);
 #endif
 		stepForward_RK4(vortices, vortexRadii, tracerRadii, tracers, NUM_TRACERS);
