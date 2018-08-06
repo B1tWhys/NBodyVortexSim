@@ -15,11 +15,11 @@
  num:	test case				(val for NUM_VORT_INIT)
  0:		normal mode				(*)
  1:		two co-orbiting vorts	(2)
- 2:		two parallel vorts		(2)
- 3:		square of vorts			(4)
+ 2:		two parallel vorts	(2)
+ 3:		square of vorts		(4)
  4:		test case 4				(3)
  5:		single vort initializer	(1)
- 6:		tracer accuracy test	(2) (1 tracer)
+ 6:		tracer accuracy test	(2)	(1 tracer)
  */
 #define TEST_CASE 0
 
@@ -30,9 +30,10 @@
 
 // render mode selection
 // #define DRAW_CONSOLE
-#define DRAW_PDF
-// #define SAVE_RAWDATA
-// #define DATA_FILEPATH "/media/externalDrive/laspData/30k_2/rawData"
+// #define DRAW_PDF
+#define SAVE_RAWDATA
+//#define DATA_FILEPATH "/media/externalDrive/laspData/30k_2/rawData"
+#define DATA_FILEPATH "./data/5M_1/rawData"
 
 #define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
@@ -45,10 +46,10 @@
 #define TIMESTEP_CONST .01
 #define RENDER_NTH_STEP 1 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS
-#define NUMBER_OF_STEPS 5 // number of time steps to simulate. 0 to loop forever
+#define NUMBER_OF_STEPS 5000000 // number of time steps to simulate. 0 to loop forever
 #endif
 
-#define NUM_TRACERS 900 // NOTE: must be a square number
+#define NUM_TRACERS 1 // NOTE: must be a square number
 #define NUM_VORT_INIT 64
 #define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
 
@@ -57,6 +58,6 @@
 #define VORTEX_SPAWN_RATE 2.56
 #define VORTEX_MERGE_RADIUS 1
 
-#define THREADCOUNT 2
+#define THREADCOUNT 8
 
 #endif
