@@ -461,12 +461,9 @@ void stepForwardVortexRK4(void *arguments) {
 		long radiiIndex = calculateVortexRadiiIndex(vortIndex, vortices[j].vIndex);
 		
 		
-		if (vortIndex != vortices[j].otherVort) {
-			vort->otherVort++;
-		}
-		
-		
-		// FIXME: do this shit and shit
+		// if (vortIndex != vortices[j].otherVort) {
+			// vort->otherVort++;
+		// }
 		
 		// Whether we add or subtract d_dj from radii depends on which index is larger.
 		
@@ -497,7 +494,6 @@ void stepForwardVortexRK4(void *arguments) {
 			newRadMag = sqrt(pow(newXRad, 2) + pow(newYRad, 2));
 		} while (!__atomic_compare_exchange(&workingRadii[radiiIndex], &oldRadMag, &newRadMag, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
 		
-		free(arguments);
 	}
 	
 	for (int tracerI = 0; tracerI < numTracers; tracerI++) {
@@ -509,6 +505,7 @@ void stepForwardVortexRK4(void *arguments) {
 	
 	vort->velocity[0] += (k1_x + k2_x * 2 + k3_x * 2 + k4_x)/6;
 	vort->velocity[1] += (k1_y + k2_y * 2 + k3_y * 2 + k4_y)/6;
+	free(arguments);
 }
 
 /**

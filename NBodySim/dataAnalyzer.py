@@ -4,6 +4,7 @@ import numpy as np
 # import matplotlib.image as image
 import matplotlib.pyplot as plt
 import array
+import statistics as stats
 
 class Timestep(object):
     def __init__(self, stepNum, time, seedVal):
@@ -44,7 +45,6 @@ class Tracer(PointObj):
 #         return super.__getitem__(index)
 
 
-######## load the file into a list of timesteps
 f = open(argv[1], 'r')
 fSize = os.path.getsize(argv[1])
 
@@ -70,8 +70,8 @@ while True:
     strArr = line.split(',')
     ts = Timestep(int(strArr[0]), float(strArr[1]), int(strArr[2]))
     print("computing timestep: %i"%ts.index)
-    # if ts.index == 1000:
-    #     break;
+    if ts.index == 23186:
+        break;
     numV = int(strArr[3])
     numT = int(strArr[4])
     # timesteps.append(ts)
@@ -89,7 +89,7 @@ while True:
         yVel = float(strArr.pop(0))
         tVel = 0.0
         if (len(strArr) == 8):
-            tVel = float(strArr.pop(0))    
+            tVel = float(strArr.pop(0))
         vorticity = float(strArr.pop(0))
         spawnStep = int(strArr.pop(0))
         
@@ -100,7 +100,7 @@ while True:
     for i in range(numT):
         line = f.readline().strip()
         strArr = line.split(',')
-         
+        
         index = int(strArr.pop(0))
         xPos = float(strArr.pop(0))
         yPos = float(strArr.pop(0))
@@ -131,9 +131,10 @@ while True:
     gamma_neg.append(negGammaSum)
     gamma_tot.append(gammaSum)
     
-# timesteps = sorted(ts, key = lambda ts: ts.time)
-
 ########### draw the graphs
+
+avgN = stats.mean(numVorts)
+print("average vort count: %f"%avgN)
 
 # plt.yticks(list(range(0, 800, 50)))
 fig, plots = plt.subplots(nrows=2)
