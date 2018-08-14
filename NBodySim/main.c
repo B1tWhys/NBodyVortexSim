@@ -26,7 +26,7 @@
 #include <limits.h>
 #include <signal.h>
 
-//#undef DEBUG
+#undef DEBUG
 
 unsigned int randomSeed;
 double timestep = TIMESTEP_CONST;
@@ -700,6 +700,11 @@ void randomizeVortex(struct Vortex *vort) {
 	vort->position[1] = generateUniformRandInRange(0, DOMAIN_SIZE_Y);
 	
 	vort->intensity = generateNormalRand(VORTEX_INTENSITY_SIGMA);
+	double minIntensity = .001;
+	
+	do {
+		vort->intensity = generateNormalRand(VORTEX_INTENSITY_SIGMA);
+	} while (fabs(vort->intensity) < minIntensity);
 	vort->velocity[0] = 0;
 	vort->velocity[1] = 0;
 	vort->initStep = currentTimestep;
@@ -952,19 +957,20 @@ double maxVelocity(struct Vortex *vorts) {
 }
 
 double carryoverSpawnCount;
-
+int vortsSpawned = 0;
 int calcSpawnCount() {	
 	if ((0)) {
 		double spawnCount = carryoverSpawnCount + VORTEX_SPAWN_RATE * timestep;
-		if (spawnCount > 1) {
+		if (spawnCount > 1.) {
 			carryoverSpawnCount = fmod(spawnCount, 1.);
-			if (fabs(carryoverSpawnCount) < .000001) carryoverSpawnCount = 0;
+			if (carryoverSpawnCount < .000001) carryoverSpawnCount = 0;
+			vortsSpawned += spawnCount;
 			spawnCount = (int)floor(spawnCount - carryoverSpawnCount); // I think that this should round instead of truncating
 //			spawnCount = (int)round(spawnCount - carryoverSpawnCount); // I think that this should round instead of truncating
 		} else {
 			carryoverSpawnCount = spawnCount;
-			spawnCount = 0;
 		}
+//		printf("spawning: %i vorts\n", (int)spawnCount);
 		return (int)spawnCount;
 	} else {
 		return generatePoissonRand(0, VORTEX_SPAWN_RATE, 0);
@@ -1145,7 +1151,8 @@ int main(int argc, const char * argv[]) {
 	free(vortexRadii);
 	free(tracerRadii);
 	thpool_destroy(thpool);
-	
+	fprintf(stderr, "AvgSpawns/step: %f\n", (float)vortsSpawned/(float)currentTimestep);
+
 #ifdef SAVE_RAWDATA
 	closeFile();
 #endif

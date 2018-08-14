@@ -8,7 +8,8 @@
 #include "RNG.h"
 #include <stdlib.h>
 #include <math.h>
-
+#include <limits.h>
+#include <float.h>
 /**
  generates a uniformly random double value in a range
  
@@ -34,6 +35,7 @@ double nextNum = NAN;
  
  @param sigma the standard deviation for the normal distribution
  */
+/*
 double generateNormalRand(double sigma) {
 	if (nextNum == NAN) {// if there is a number left over from last time, cache it, clear nextNum, and return the value.
 		double val = nextNum;
@@ -55,6 +57,29 @@ double generateNormalRand(double sigma) {
 	double multiplier = sqrt(-2.*log(s) / s);
 	nextNum = u * multiplier;
 	return v * multiplier;
+}*/
+
+double z1 = 0;
+char generate = 0;
+const double epsilon = DBL_EPSILON;
+
+double generateNormalRand(double sigma) {
+	generate = !generate;
+	
+	if (!generate) {
+		return z1 * sigma;
+	}
+	
+	double u1, u2;
+	do {
+		u1 = generateUniformRandInRange(0, 1);
+		u2 = generateUniformRandInRange(0, 1);
+	} while (u1 <= DBL_EPSILON);
+	
+	double z0;
+	z0 = sqrt(-2.0 * log(u1)) * cos(2 * M_PI * u2);
+	z1 = sqrt(-2.0 * log(u1)) * sin(2 * M_PI * u2);
+	return z0 * sigma;
 }
 
 /*
@@ -67,7 +92,6 @@ double generateNormalRand(double sigma) {
  	p ← p * λ / x.
  	s ← s + p.
  return x.
- 
  */
 
 /**

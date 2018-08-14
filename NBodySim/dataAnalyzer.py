@@ -1,10 +1,17 @@
+# usage:
+# python dataAnalyzer.py path/to/rawDataFile [out/file/path]
+# output file path defaults to ./data/plots_1.png
+
 from sys import argv
 import os
 import numpy as np
-# import matplotlib.image as image
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.image as image
 import matplotlib.pyplot as plt
 import array
 import statistics as stats
+import math
 
 class Timestep(object):
     def __init__(self, stepNum, time, seedVal):
@@ -69,9 +76,9 @@ while True:
     line = f.readline().strip()
     strArr = line.split(',')
     ts = Timestep(int(strArr[0]), float(strArr[1]), int(strArr[2]))
-    print("computing timestep: %i"%ts.index)
-    if ts.index == 23186:
-        break;
+#     print("computing timestep: %i"%ts.index)
+    # if ts.index == 100:
+        # break;
     numV = int(strArr[3])
     numT = int(strArr[4])
     # timesteps.append(ts)
@@ -119,9 +126,9 @@ while True:
     totVortCount = len(ts.vorts)
     posVortCount = len([vort for vort in ts.vorts if vort.vorticity > 0])
     negVortCount = totVortCount - posVortCount
-    posGammaSum = sum([vort.vorticity for vort in ts.vorts if vort.vorticity > 0])
-    negGammaSum = sum([vort.vorticity for vort in ts.vorts if vort.vorticity < 0])
-    gammaSum = posGammaSum + negGammaSum
+    posGammaSum = sum([vort.vorticity for vort in ts.vorts if vort.vorticity > 0])/(math.pi*2)
+    negGammaSum = sum([vort.vorticity for vort in ts.vorts if vort.vorticity < 0])/(math.pi*2)
+    gammaSum = (posGammaSum + negGammaSum)/(math.pi*2)
     
     times.append(ts.index*.01)
     numVorts.append(totVortCount)
@@ -130,9 +137,9 @@ while True:
     gamma_pos.append(posGammaSum)
     gamma_neg.append(negGammaSum)
     gamma_tot.append(gammaSum)
+#     print(len([vort.vorticity for vort in ts.vorts if vort.vorticity > .001 and vort.vorticity < .002]))
     
 ########### draw the graphs
-
 avgN = stats.mean(numVorts)
 print("average vort count: %f"%avgN)
 
@@ -157,5 +164,7 @@ ax2.grid()
 ax1.set(xlabel='time', ylabel='num vortices')
 ax2.set(xlabel='time', ylabel='Gamma')
 
+plotsfName = argv[2] if (len(argv) == 3) else "./data/plots_1.png"
 
-plt.show()
+plt.savefig(plotsfName, dpi=300)
+# plt.show()
