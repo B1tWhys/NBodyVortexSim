@@ -9,10 +9,11 @@
 #define SaveState_h
 
 #include "main.h"
+#include "constants.h"
 
 #include <stdio.h>
 #ifndef DATA_FILEPATH
-#define DATA_FILEPATH "./rawData"
+#define DATA_FILEPATH "./data/rawData"
 #endif
 
 

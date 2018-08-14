@@ -33,7 +33,11 @@
 // #define DRAW_PDF
 #define SAVE_RAWDATA
 //#define DATA_FILEPATH "/media/externalDrive/laspData/30k_2/rawData"
+<<<<<<< HEAD
 #define DATA_FILEPATH "./data/5M_1/rawData"
+=======
+#define DATA_FILEPATH "./data/10k_1/rawData"
+>>>>>>> f54112e4e2045980373488786de86e2ba57d216c
 
 #define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
@@ -46,7 +50,11 @@
 #define TIMESTEP_CONST .01
 #define RENDER_NTH_STEP 1 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS
+<<<<<<< HEAD
 #define NUMBER_OF_STEPS 5000000 // number of time steps to simulate. 0 to loop forever
+=======
+#define NUMBER_OF_STEPS 10000 // number of time steps to simulate. 0 to loop forever
+>>>>>>> f54112e4e2045980373488786de86e2ba57d216c
 #endif
 
 #define NUM_TRACERS 1 // NOTE: must be a square number

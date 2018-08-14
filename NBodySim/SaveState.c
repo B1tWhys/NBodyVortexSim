@@ -71,6 +71,12 @@ void saveState(int timestep, double currentTime, unsigned int currentSeed, int n
 	fflush(file);
 }
 
+void saveState_binary(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
+	void *writePtr = &timestep;
+	assert(fprintf(file, "\x1D%i,%f,%u,%i,%i\n", timestep, currentTime, currentSeed, numVorts, numTracers) >= 0);
+	
+}
+
 void closeFile() {
 	fprintf(stderr, "closing file\n");
 	fclose(file);
