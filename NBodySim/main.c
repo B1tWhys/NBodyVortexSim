@@ -567,7 +567,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 				
 				if (thread == THREADCOUNT - 1) {
 					// if the tracers couldn't be evenly divided between threads, then we just put the extra ones on the last thread.
-					// TODO: do a better job of splitting this up. In the worst case, the last thread could have 2*(tracersPerThread)-1 tracers (which would not be awesome.)
+					// TODO: do a better job of splitting this up. In the worst case, the last thread could have 2*(tracersPerThread)-1 tracers
 					
 					tracersPerThread += NUM_TRACERS%THREADCOUNT;
 				}
@@ -580,15 +580,11 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 				args->intermediateTracerRads = intermediateTracerRadArrayPiece;
 				args->vortices = vortices;
 				
-				// pthread_create(&threads[thread], NULL, stepForwardTracerRK4, args);
 				thpool_add_work(thpool, stepForwardTracerRK4, args);
 			}
 			
 			thpool_wait(thpool);
 			
-			// for (int thread = 0; thread < THREADCOUNT; thread++) {
-			// 	pthread_join(threads[thread], NULL);
-			// }
 		} else { // just run on the main thread to make debugging easier
 			struct TracerArgs *args = malloc(sizeof(struct TracerArgs));
 			args->RKStep = RKStep;
@@ -788,7 +784,6 @@ int mergeVorts(double *vortexRadii, struct Vortex *vorts, double *tracerRads, st
 					struct Vortex *vort1 = &vorts[vortIndex1];
 					struct Vortex *vort2 = &vorts[vortIndex2];
 					
-//					printf("merging int1: %.15f | int2: %.15f\n", vort1->intensity, vort2->intensity);
 					if (totalMerges) (*totalMerges)++;
 					
 					double absInt1 = fabs(vort1->intensity);
@@ -878,7 +873,9 @@ double minRad(double *radArr, long numVorts) {
 	return min;
 }
 
-/**print the vortRads array in a human readable format*/
+/**
+ print the vortRads array in a human readable format
+*/
 void pprintVortRads(double *rads, int numActiveVorts) {
 	long index = 0;
 	for (int row = 0; row < numActiveVorts; row++) {
@@ -954,25 +951,33 @@ double maxVelocity(struct Vortex *vorts) {
 
 double carryoverSpawnCount;
 int vortsSpawned = 0;
-int calcSpawnCount() {	
+/**
+ calculate the numebr of vorties to spawn in the next time step
+ */
+int calcSpawnCount() {
 	if ((0)) {
+		if (currentTimestep == 0) carryoverSpawnCount = 0;
+		// calculate the number of vortices to spawn using Mark's scheme
+		
 		double spawnCount = carryoverSpawnCount + VORTEX_SPAWN_RATE * timestep;
 		if (spawnCount > 1.) {
 			carryoverSpawnCount = fmod(spawnCount, 1.);
 			if (carryoverSpawnCount < .000001) carryoverSpawnCount = 0;
 			vortsSpawned += spawnCount;
 			spawnCount = (int)floor(spawnCount - carryoverSpawnCount); // I think that this should round instead of truncating
-//			spawnCount = (int)round(spawnCount - carryoverSpawnCount); // I think that this should round instead of truncating
 		} else {
 			carryoverSpawnCount = spawnCount;
 		}
-//		printf("spawning: %i vorts\n", (int)spawnCount);
 		return (int)spawnCount;
 	} else {
+		// calculate the number of vortices to spawn using a poisson PDF
 		return generatePoissonRand(0, VORTEX_SPAWN_RATE, 0);
 	}
 }
 
+/**
+ handle SIGTERMs
+ */
 void termination_handler(int sig) {
 #ifdef SAVE_RAWDATA
 	closeFile();
@@ -981,72 +986,81 @@ void termination_handler(int sig) {
 	raise(sig);
 }
 
-#pragma mark - Main
-
-float timespentDrawing = 0;
-
-int main(int argc, const char * argv[]) {
-	struct Vortex *vortices;
-	struct Tracer *tracers;
-	initFromFile("./rawData", 5, &vortices, &numDriverVorts,  &tracers);
-	
+void initializeSimulation(struct Vortex *vortices[], int *numDriverVorts, double *vortexRadii[], struct Tracer *tracers[], double *tracerRadii[], int *vorticesAllocated) {
+	// setup sigterm handlers
 	signal(SIGTERM, termination_handler);
 	signal(SIGINT, termination_handler);
-	
-	if (FIRST_SEED == -1) {
-		time((time_t *)&randomSeed);
-		printf("First random seed is %i\n", randomSeed);
-	} else {
-		randomSeed = FIRST_SEED;
+	// initialize the threadpool
+	if (THREADCOUNT > 1) {
+		thpool = thpool_init(THREADCOUNT);
 	}
 	
-	srand(randomSeed);
+	// if we are initializing from a file, then everything is read and allocated in initFromFile
+#if defined(INITFNAME) && defined(INIT_TIME_STEP) && TEST_CASE == 0
+	initFromFile(INITFNAME, INIT_TIME_STEP, vortices, numDriverVorts, vorticesAllocated, tracers);
+#else
+	// seed the RNG
+	if (FIRST_SEED == -1) {
+		currentTimestep = 0;
+		time((time_t *)&lastX);
+		
+		printf("First random seed is %li\n", lastX);
+	} else {
+		lastX = FIRST_SEED;
+	}
 	
-	currentTimestep = 0;
 	numDriverVorts = 0;
-	double time = 0;
-	carryoverSpawnCount = 0;
-	
-	thpool = thpool_init(THREADCOUNT);
-	
-	int vorticesAllocated = (int)NUM_VORT_INIT*1.5;
-
+	*vorticesAllocated = (int)NUM_VORT_INIT*1.5;
 	// vortices is the array of Vortex structs
-	vortices = malloc(sizeof(struct Vortex) * vorticesAllocated);
-//	int radiiLen = sizeof(double) * (pow(vorticesAllocated, 2) - vorticesAllocated);
-	unsigned long vortexRadiiLen = sizeof(double) * (calculateVortexRadiiIndex(vorticesAllocated-1, vorticesAllocated-2) + 3);
-
+	*vortices = malloc(sizeof(struct Vortex) * *vorticesAllocated);
+	
+	// tracers is the array of Tracer structs
+	*tracers = malloc(sizeof(struct Tracer) * NUM_TRACERS);
+	
+	if (TEST_CASE == 0) {
+		int spawnsRemaining = NUM_VORT_INIT;
+		spawnVorts(tracerRadii, vortices, vortexRadii, vorticesAllocated, spawnsRemaining);
+		initialize_tracers(*tracers, NUM_TRACERS);
+		// Generate vortices so that they don't end up being merged on the first timestep.
+	} else {
+		spawnVorts(tracerRadii, vortices, vortexRadii, vorticesAllocated, NUM_VORT_INIT);
+		initialize_test(*vortices, *numDriverVorts);
+		if (TEST_CASE != 6) {
+			initialize_tracers(*tracers, NUM_TRACERS);
+		} else {
+			initialize_single_test_tracer(*tracers, NUM_TRACERS, *vortices);
+		}
+	}
+#endif
+	
+	unsigned long vortexRadiiSize = sizeof(double) * (calculateVortexRadiiIndex(*vorticesAllocated-1, *vorticesAllocated-2) + 3);
+	
 	// vortexRadii is the matrix of distances between vortices. The distance between vortex vIndex==a and vortex vIndex==b (where a < b) is at index 3*(a*(a+1)/2+b).
 	// the next item in the array is the x-component of the distance, and then the y-component of the distance
 	// r, r_x, r_y
 	
-	double *vortexRadii = malloc(vortexRadiiLen);
-//	double *radii = calloc(sizeof(double), pow(vorticesAllocated, 2) - vorticesAllocated);
+	*vortexRadii = malloc(vortexRadiiSize);
+	
+	long tracerRadSize = NUM_TRACERS * *vorticesAllocated * sizeof(double) * 3;
+	*tracerRadii = malloc(tracerRadSize); // row = vortex, col = tracer; Note: vortPos - tracerPos
+	
+	updateRadii_pythagorean(*vortexRadii, *vortices, *tracerRadii, *tracers, NUM_TRACERS);
+}
 
-	// tracers is the array of Tracer structs
-	tracers = malloc(sizeof(struct Tracer) * NUM_TRACERS);
+#pragma mark - Main
+
+int main(int argc, const char * argv[]) {
+	struct Vortex *vortices;
+	struct Tracer *tracers;
+	double *vortexRadii;
+	double *tracerRadii;
+	int vorticesAllocated;
 	
-	long tracerRadSize = NUM_TRACERS * vorticesAllocated * sizeof(double) * 3;
-	double *tracerRadii = malloc(tracerRadSize); // row = vortex, col = tracer; Note: vortPos - tracerPos
+	initializeSimulation(&vortices, &numDriverVorts, &vortexRadii, &tracers, &tracerRadii, &vorticesAllocated);
 	
-	if (TEST_CASE == 0) {
-		int spawnsRemaining = NUM_VORT_INIT;
-		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, spawnsRemaining);
-		initialize_tracers(tracers, NUM_TRACERS);
-		
-		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
-		// Generate vortices so that they don't end up being merged on the first timestep.
-//		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, INT_MAX, NULL);
-	} else {
-		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, NUM_VORT_INIT);
-		initialize_test(vortices, numDriverVorts);
-		if (TEST_CASE != 6) {
-			initialize_tracers(tracers, NUM_TRACERS);
-		} else {
-			initialize_single_test_tracer(tracers, NUM_TRACERS, vortices);
-		}
-		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
-	}
+#if TEST_CASE == 4
+	double currentTime = 0;
+#endif
 	
 	/******************* main loop *******************/
 	
@@ -1075,32 +1089,29 @@ int main(int argc, const char * argv[]) {
 			drawToFile(vortices, numDriverVorts, tracers, filename);
 			free(filename);
 			clock_gettime(CLOCK_MONOTONIC, &endTime);
-			timespentDrawing += (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
 		}
 #endif
 		
 		// adjust the timestep based on minRad and maxVel for test case 4
-		if (TEST_CASE == 4) {
+#if TEST_CASE == 4
 			double minR = minRad(vortexRadii, numDriverVorts);
 			double maxV = maxVelocity(vortices);
 			timestep = minR / maxV * .5;
 			if (timestep > TIMESTEP_CONST || maxV == 0) timestep = TIMESTEP_CONST;
 			
-			if (time > 50) return 0;
-		}
-		time += timestep;
+			currentTime += timestep;
+			if (currentTime > 50) return 0;
+#endif
 		clock_gettime(CLOCK_MONOTONIC, &startTime);
 		
 #ifdef VORTEX_LIFECYCLE
 		int numSpawns = calcSpawnCount();
-		// fprintf(stderr, "spawning %i vorts\n", numSpawns);
 		printf("spawning %i vorts\n", numSpawns);
 		int totalMergeCount = 0;
 		int spawnsLeft = mergeVorts(vortexRadii, vortices, tracerRadii, tracers, numSpawns, &totalMergeCount);
 		spawnVorts(&tracerRadii, &vortices, &vortexRadii, &vorticesAllocated, spawnsLeft);
 		updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
 		mergeVorts(vortexRadii, vortices, tracerRadii, tracers, 0, &totalMergeCount);
-		// fprintf(stderr, "timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMergeCount);
 		printf("timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMergeCount);
 #endif
 		stepForward_RK4(vortices, vortexRadii, tracerRadii, tracers, NUM_TRACERS);
@@ -1109,27 +1120,22 @@ int main(int argc, const char * argv[]) {
 		
 		clock_gettime(CLOCK_MONOTONIC, &endTime);
 		double sec = (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
-#ifdef VORTEX_LIFECYCLE
 		printf("Step number %i calculation complete in %f sec with %i vortices\n", currentTimestep, sec, numDriverVorts);
-		fprintf(stderr, "Step number %i calculation complete in %f sec with %i vortices\n", currentTimestep, sec, numDriverVorts);
-#else
-		printf("Step number %i calculation complete in %f sec with %i vortices\n", currentTimestep, sec, numDriverVorts);
-#endif
 		
 #ifdef SAVE_RAWDATA // the location of this save might be responsable for an OB1 error.
 		if (currentTimestep == 0) openFile();
 		saveState(currentTimestep,
-				  time,
 				  lastX,
 				  numDriverVorts,
 				  NUM_TRACERS,
 				  vortices,
 				  tracers);
 #endif
+		
+		fflush(stdout);
 		currentTimestep++;
 	}
 	
-	printf("Total time spent drawing: %5.2f sec\n", timespentDrawing);
 	
 	for (int vortIndex = 0; vortIndex < numDriverVorts; vortIndex++) {
 		free(vortices[vortIndex].position);
@@ -1146,7 +1152,6 @@ int main(int argc, const char * argv[]) {
 	free(vortexRadii);
 	free(tracerRadii);
 	thpool_destroy(thpool);
-	fprintf(stderr, "AvgSpawns/step: %f\n", (float)vortsSpawned/(float)currentTimestep);
 
 #ifdef SAVE_RAWDATA
 	closeFile();

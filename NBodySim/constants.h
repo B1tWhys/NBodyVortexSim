@@ -28,23 +28,27 @@
 
 // render mode selection
 // #define DRAW_CONSOLE
-// #define DRAW_PDF
+//#define DRAW_PDF
 #define SAVE_RAWDATA
-//#define DATA_FILEPATH "/media/externalDrive/laspData/30k_2/rawData"
-#define DATA_FILEPATH "./data/5M_1/rawData"
+
+//#define DATA_OUT_FILEPATH "./rawData"
+//#define INITFNAME "./rawData"
+//#define INIT_TIME_STEP 1000
 
 #define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
 #define VORTEX_DRAW_SIZE_CONST 4
 #define TRACER_DRAW_SIZE_CONST 1
 
+#if !(defined(DOMAIN_SIZE_X) || defined(DOMAIN_SIZE_Y))
 #define DOMAIN_SIZE_X 64 // size of one box of the simulation in units
 #define DOMAIN_SIZE_Y 64
+#endif
 
 #define TIMESTEP_CONST .01
-#define RENDER_NTH_STEP 1 // speeds up the simulation display
+#define RENDER_NTH_STEP 5 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS
-#define NUMBER_OF_STEPS 5 // number of time steps to simulate. 0 to loop forever
+#define NUMBER_OF_STEPS 2 // number of time steps to simulate. 0 to loop forever
 #endif
 
 #define NUM_TRACERS 1 // NOTE: must be a square number

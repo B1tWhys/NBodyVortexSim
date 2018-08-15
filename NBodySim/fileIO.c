@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#ifndef DATA_FILEPATH
-#define DATA_FILEPATH "./data/rawData"
+#ifndef DATA_OUT_FILEPATH
+#define DATA_OUT_FILEPATH "./data/rawData"
 #endif
 
 /*
@@ -40,12 +40,12 @@ FILE *file;
 
 void openFile() {
 	// file = fopen("./data/rawData", "a");
-	file = fopen(DATA_FILEPATH, "w");
+	file = fopen(DATA_OUT_FILEPATH, "w");
 	assert(file);
 }
 
-void saveState(int timestep, double currentTime, long currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
-	assert(fprintf(file, "\x1D%i,%f,%li,%i,%i\n", timestep, currentTime, currentSeed, numVorts, numTracers) >= 0);
+void saveState(int timestep, long currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
+	assert(fprintf(file, "\x1D%i,%li,%i,%i\n", timestep, currentSeed, numVorts, numTracers) >= 0);
 	fputc(0x1E, file);
 	for (int i = 0; i < numVorts; i++) {
 		struct Vortex *vort = &vorts[i];
@@ -99,7 +99,7 @@ break;\
 }\
 }
 
-void initFromFile(char *fName, int loadIndex, struct Vortex *vortices[], int *numDriverVorts, struct Tracer *tracers[]) {
+void initFromFile(char *fName, int loadIndex, struct Vortex *vortices[], int *numDriverVorts, int *vortsAllocated, struct Tracer *tracers[]) {
 	FILE *sourceF = fopen(fName, "r");
 	char strbuff[100]; // if a number in the file exceeds 100 characters in length, this will overflow
 	clearStrBuff;
@@ -117,8 +117,10 @@ void initFromFile(char *fName, int loadIndex, struct Vortex *vortices[], int *nu
 	assert(loadIndex == atoi(strbuff)); // check that we are at the correct timestep in the file
 	currentTimestep = loadIndex;
 	
-	// TODO: handle time
-	readNextCSV;
+	// handle (or don't handle) time
+//	clearStrBuff;
+//	readNextCSV;
+//	*time = atof(strbuff);
 	
 	clearStrBuff;
 	readNextCSV;
@@ -136,7 +138,8 @@ void initFromFile(char *fName, int loadIndex, struct Vortex *vortices[], int *nu
 	strbuff[0] = fgetc(sourceF);
 	assert(strbuff[0] == 0x1E);
 	
-	*vortices = malloc((int)sizeof(struct Vortex) * (*numDriverVorts) * 1.5);
+	*vortsAllocated = (*numDriverVorts) * 1.5;
+	*vortices = malloc((int)sizeof(struct Vortex) * (*vortsAllocated));
 	*tracers = malloc((int)sizeof(struct Vortex) * NUM_TRACERS * 1.5);
 	
 	for (int vIndex = 0; vIndex < *numDriverVorts; vIndex++) {

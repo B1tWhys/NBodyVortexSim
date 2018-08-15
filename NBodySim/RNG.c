@@ -34,7 +34,6 @@ long randVal() {
  @return returns a random uniform double in the given range
  */
 double generateUniformRandInRange(double lowerBound, double upperBound) { // range is inclusive on both ends
-	// TODO: investigate whether there's an off by 1 error in here
 	double range = upperBound-lowerBound;
 	double result = ((double)randVal()/mod)*range + lowerBound;
 	return result;

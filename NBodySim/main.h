@@ -27,15 +27,7 @@ struct Tracer {
 	double *velocity; // this is change in coord. per time step
 };
 
-struct TracerArgs {
-	int RKStep;
-	struct Tracer *tracers;
-	int numTracers;
-	double *tracerRadii;
-	double *intermediateTracerRads;
-	struct Vortex *vortices;
-};
-
+// used to pass vortex info between threads
 struct VortexArgs {
 	int RKStep;
 	struct Vortex *vortices;
@@ -45,6 +37,16 @@ struct VortexArgs {
 	long vortRadLen;
 	double *intermediateTracerRads;
 	int numTracers;
+};
+
+// used to pass tracer info between threads
+struct TracerArgs {
+	int RKStep;
+	struct Tracer *tracers;
+	int numTracers;
+	double *tracerRadii;
+	double *intermediateTracerRads;
+	struct Vortex *vortices;
 };
 
 #endif /* main_h */

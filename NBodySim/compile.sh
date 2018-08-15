@@ -36,7 +36,7 @@ fi
 
 if [ -z "${debug+x}" ]; then debug="false"; fi
 
-command="gcc ./main.c ./guiOutput.c ./TestCaseInitializers.c ./SaveState.c ./RNG.c ./C-Thread-Pool/thpool.c -o ./data/simulator $args"
+command="gcc ./main.c ./guiOutput.c ./TestCaseInitializers.c ./fileIO.c ./RNG.c ./C-Thread-Pool/thpool.c -o ./data/simulator $args"
 echo "Full compilation instruction is: $command"
 eval "$command"
 

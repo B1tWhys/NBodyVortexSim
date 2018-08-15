@@ -2,12 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/Skyler/LASP Research/NBodyVortexSim/NBodySim/fileIO.c">
-   </FileRef>
-   <FileRef
-      location = "group:/Users/Skyler/LASP Research/NBodyVortexSim/NBodySim/fileIO.h">
-   </FileRef>
-   <FileRef
       location = "self:NBodyVortexSim.xcodeproj">
    </FileRef>
 </Workspace>
