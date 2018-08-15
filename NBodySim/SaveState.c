@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <assert.h>
 
+#ifndef DATA_FILEPATH
+#define DATA_FILEPATH "./data/rawData"
+#endif
+
 /*
  File Format:
  
@@ -39,8 +43,8 @@ void openFile() {
 	assert(file);
 }
 
-void saveState(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
-	assert(fprintf(file, "\x1D%i,%f,%u,%i,%i\n", timestep, currentTime, currentSeed, numVorts, numTracers) >= 0);
+void saveState(int timestep, double currentTime, long currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
+	assert(fprintf(file, "\x1D%i,%f,%li,%i,%i\n", timestep, currentTime, currentSeed, numVorts, numTracers) >= 0);
 	fputc(0x1E, file);
 	for (int i = 0; i < numVorts; i++) {
 		struct Vortex *vort = &vorts[i];
@@ -72,9 +76,7 @@ void saveState(int timestep, double currentTime, unsigned int currentSeed, int n
 }
 
 void saveState_binary(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
-	void *writePtr = &timestep;
 	assert(fprintf(file, "\x1D%i,%f,%u,%i,%i\n", timestep, currentTime, currentSeed, numVorts, numTracers) >= 0);
-	
 }
 
 void closeFile() {

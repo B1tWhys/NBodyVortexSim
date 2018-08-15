@@ -1,8 +1,4 @@
 //
-
-/*
- use 2pi in v function, merge at 1, multiply sigma by 2pi
- */
 //  main.c
 //  NBodySim
 //
@@ -35,6 +31,7 @@ int numDriverVorts;
 threadpool thpool;
 
 #pragma mark - Index Calculators
+
 /**
  This function return the index in the vortex radii array for the radius between a pair of vortices
  
@@ -43,7 +40,6 @@ threadpool thpool;
  
  @return Index of the radius value
  */
-
 long calculateVortexRadiiIndex(long vortIndex1, long vortIndex2) {
 	// radii is basically a hash table, with this as the hash function.
 	// I suspect that this is better than the standard dictionary libraries for this problem.
@@ -863,6 +859,111 @@ void initialize_single_test_tracer(struct Tracer *tracers, int numTracers, struc
 	memcpy(tracers[0].position, vorts[0].position, sizeof(double) * 2);
 }
 
+#define clearStrBuff for (int i = 0; i < 100; i++) strbuff[i] = 0
+#define readNextCSV \
+for (int i = 0; 1; i++) {\
+	char nextChar = fgetc(sourceF);\
+	if (nextChar != ',' && nextChar != '\n') {\
+		strbuff[i] = nextChar;\
+	} else {\
+		break;\
+	}\
+}
+
+void initFromFile(char *fName, int loadIndex, struct Vortex *vortices[], struct Tracer *tracers[]) {
+	FILE *sourceF = fopen(fName, "r");
+	char strbuff[100]; // if a number in the file exceeds 100 characters in length, this will overflow
+	clearStrBuff;
+	
+	// loop through timesteps until we are at the timestep to load from
+	for (int tsIndex = 0; tsIndex <= loadIndex; tsIndex++) {
+		while (strbuff[0] != 0x1D) { // loop until we reach the beginning of the next timestep
+			strbuff[0] = (char)fgetc(sourceF);
+			assert(strbuff[0] != -1); // we reached EOF before reaching the designated timestep
+		}
+		strbuff[0] = 0;
+	}
+	
+	readNextCSV;
+	assert(loadIndex == atoi(strbuff)); // check that we are at the correct timestep in the file
+	currentTimestep = loadIndex;
+	
+	// TODO: handle time
+	readNextCSV;
+	
+	clearStrBuff;
+	readNextCSV;
+	lastX = atol(strbuff);
+	
+	clearStrBuff;
+	readNextCSV;
+	numDriverVorts = atoi(strbuff);
+	
+	clearStrBuff;
+	readNextCSV;
+	assert(NUM_TRACERS == atoi(strbuff)); // the number of tracers in the file != num tracers in the current config file
+	
+	clearStrBuff;
+	strbuff[0] = fgetc(sourceF);
+	assert(strbuff[0] == 0x1E);
+	
+	*vortices = malloc(sizeof(struct Vortex) * numDriverVorts * 1.5);
+	
+	for (int vIndex = 0; vIndex < numDriverVorts; vIndex++) {
+		struct Vortex *vort = &(*vortices)[vIndex];
+		vort->position = malloc(sizeof(double) * 2);
+		vort->velocity = malloc(sizeof(double) * 2);
+		clearStrBuff;
+		readNextCSV;
+		vort->vIndex = atoi(strbuff);
+		clearStrBuff;
+		readNextCSV;
+		vort->position[0] = atof(strbuff);
+		clearStrBuff;
+		readNextCSV;
+		vort->position[1] = atof(strbuff);
+		clearStrBuff;
+		readNextCSV;
+		vort->velocity[0] = atof(strbuff);
+		clearStrBuff;
+		readNextCSV;
+		vort->velocity[1] = atof(strbuff);
+		readNextCSV; // skip over totVel
+		clearStrBuff;
+		readNextCSV;
+		vort->intensity = atof(strbuff);
+		clearStrBuff;
+		readNextCSV;
+		vort->spawnStep = atof(strbuff);
+	}
+	
+	assert(fgetc(sourceF) == 0x1E); // make sure we are past the vortices
+	
+	for (int tIndex = 0; tIndex < NUM_TRACERS; tIndex++) {
+		struct Tracer *tracer = &(*tracers)[tIndex];
+		tracer->position = malloc(sizeof(double) * 2);
+		tracer->velocity = malloc(sizeof(double) * 2);
+		clearStrBuff;
+		readNextCSV;
+		tracer->tIndex = atoi(strbuff);
+		clearStrBuff;
+		readNextCSV;
+		tracer->position[0] = atof(strbuff);
+		clearStrBuff;
+		readNextCSV;
+		tracer->position[1] = atof(strbuff);
+		clearStrBuff;
+		readNextCSV;
+		tracer->velocity[0] = atof(strbuff);
+		clearStrBuff;
+		readNextCSV;
+		tracer->velocity[1] = atof(strbuff);
+		readNextCSV; // skip totVel
+	}
+	
+	assert(fgetc(sourceF) == 0x1D); // make sure that's the last of the tracers for that timestep.
+}
+
 #pragma mark - misc
 
 /**
@@ -990,6 +1091,13 @@ void termination_handler(int sig) {
 float timespentDrawing = 0;
 
 int main(int argc, const char * argv[]) {
+	struct Vortex *vortices;
+	struct Tracer *tracers;
+	initFromFile("./rawData", 1160, &vortices, &tracers);
+	
+	
+	
+	
 	signal(SIGTERM, termination_handler);
 	signal(SIGINT, termination_handler);
 	
@@ -999,7 +1107,6 @@ int main(int argc, const char * argv[]) {
 	} else {
 		randomSeed = FIRST_SEED;
 	}
-	
 	
 	srand(randomSeed);
 	
@@ -1013,7 +1120,7 @@ int main(int argc, const char * argv[]) {
 	int vorticesAllocated = (int)NUM_VORT_INIT*1.5;
 
 	// vortices is the array of Vortex structs
-	struct Vortex *vortices = malloc(sizeof(struct Vortex) * vorticesAllocated);
+	vortices = malloc(sizeof(struct Vortex) * vorticesAllocated);
 //	int radiiLen = sizeof(double) * (pow(vorticesAllocated, 2) - vorticesAllocated);
 	unsigned long vortexRadiiLen = sizeof(double) * (calculateVortexRadiiIndex(vorticesAllocated-1, vorticesAllocated-2) + 3);
 
@@ -1025,7 +1132,7 @@ int main(int argc, const char * argv[]) {
 //	double *radii = calloc(sizeof(double), pow(vorticesAllocated, 2) - vorticesAllocated);
 
 	// tracers is the array of Tracer structs
-	struct Tracer *tracers = malloc(sizeof(struct Tracer) * NUM_TRACERS);
+	tracers = malloc(sizeof(struct Tracer) * NUM_TRACERS);
 	
 	long tracerRadSize = NUM_TRACERS * vorticesAllocated * sizeof(double) * 3;
 	double *tracerRadii = malloc(tracerRadSize); // row = vortex, col = tracer; Note: vortPos - tracerPos
@@ -1125,7 +1232,7 @@ int main(int argc, const char * argv[]) {
 		if (currentTimestep == 0) openFile();
 		saveState(currentTimestep,
 				  time,
-				  randomSeed,
+				  lastX,
 				  numDriverVorts,
 				  NUM_TRACERS,
 				  vortices,

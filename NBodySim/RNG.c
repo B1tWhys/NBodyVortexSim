@@ -7,9 +7,24 @@
 
 #include "RNG.h"
 #include <stdlib.h>
-#include <math.h>
 #include <limits.h>
 #include <float.h>
+#include <math.h>
+
+/*
+ this is a linear congruential pseudo random number generator. Obligatory wiki link: https://en.wikipedia.org/wiki/Linear_congruential_generator
+ mod, c and a values taken from MMIX's LCG implementation
+ */
+const long mod = LONG_MAX;
+const long c = 6364136223846793005;
+const long a = 1442695040888963407;
+long lastX;
+
+long randVal() {
+	lastX = (a * lastX + c) % mod;
+	return (lastX & mod);
+}
+
 /**
  generates a uniformly random double value in a range
  
@@ -21,11 +36,14 @@
 double generateUniformRandInRange(double lowerBound, double upperBound) { // range is inclusive on both ends
 	// TODO: investigate whether there's an off by 1 error in here
 	double range = upperBound-lowerBound;
-	double result = ((double)rand()/RAND_MAX)*range + lowerBound;
+	double result = ((double)randVal()/mod)*range + lowerBound;
 	return result;
 }
 
 double nextNum = NAN;
+double z1 = 0;
+char generate = 0;
+const double epsilon = DBL_EPSILON;
 
 /**
  generates a random double from a normal distributuion centered at 0 with a given standard deviation
@@ -35,34 +53,6 @@ double nextNum = NAN;
  
  @param sigma the standard deviation for the normal distribution
  */
-/*
-double generateNormalRand(double sigma) {
-	if (nextNum == NAN) {// if there is a number left over from last time, cache it, clear nextNum, and return the value.
-		double val = nextNum;
-		nextNum = NAN;
-		return val;
-	}
-	
-	double s, R, u, v;
-	
-	while (1) { // generate u & v until s is in (0, 1]
-		u = generateUniformRandInRange(-1, 1);
-		v = generateUniformRandInRange(-1, 1);
-		
-		s = pow(u, 2) + pow(v, 2);
-		if (s != 0 && s < 1) break;
-	}
-	
-	R = pow(s, 2);
-	double multiplier = sqrt(-2.*log(s) / s);
-	nextNum = u * multiplier;
-	return v * multiplier;
-}*/
-
-double z1 = 0;
-char generate = 0;
-const double epsilon = DBL_EPSILON;
-
 double generateNormalRand(double sigma) {
 	generate = !generate;
 	

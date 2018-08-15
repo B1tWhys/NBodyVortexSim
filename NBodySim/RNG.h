@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 
+extern long lastX;
+
 double generateUniformRandInRange(double lowerBound, double upperBound);
 double generateNormalRand(double sigma);
 int generatePoissonRand(double k, double L, double x);

@@ -10,15 +10,10 @@
 
 #include "main.h"
 #include "constants.h"
-
 #include <stdio.h>
-#ifndef DATA_FILEPATH
-#define DATA_FILEPATH "./data/rawData"
-#endif
-
 
 void openFile(void);
-void saveState(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers);
+void saveState(int timestep, double currentTime, long currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers);
 void closeFile(void);
 
 #endif /* SaveState_h */
