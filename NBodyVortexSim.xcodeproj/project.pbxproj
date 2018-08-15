@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D41DAF0B2102A2F40076F0EF /* TestCaseInitializers.c in Sources */ = {isa = PBXBuildFile; fileRef = D41DAF0A2102A2F40076F0EF /* TestCaseInitializers.c */; };
-		D457F141210674FF00711CBD /* SaveState.c in Sources */ = {isa = PBXBuildFile; fileRef = D457F140210674FF00711CBD /* SaveState.c */; };
+		D495724A21249D940079E744 /* fileIO.c in Sources */ = {isa = PBXBuildFile; fileRef = D495724821249D940079E744 /* fileIO.c */; };
 		D4A383F321011F14009D21FF /* libpthread.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D4A383F221011F14009D21FF /* libpthread.tbd */; };
 		D4B45D26210800B10058410B /* RNG.c in Sources */ = {isa = PBXBuildFile; fileRef = D4B45D25210800B10058410B /* RNG.c */; };
 		D4C9C148210BCA4E00229D3A /* thpool.c in Sources */ = {isa = PBXBuildFile; fileRef = D4C9C147210BCA3700229D3A /* thpool.c */; };
@@ -42,8 +42,8 @@
 /* Begin PBXFileReference section */
 		D41DAF092102A2F40076F0EF /* TestCaseInitializers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestCaseInitializers.h; sourceTree = "<group>"; };
 		D41DAF0A2102A2F40076F0EF /* TestCaseInitializers.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = TestCaseInitializers.c; sourceTree = "<group>"; };
-		D457F13F210674FF00711CBD /* SaveState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SaveState.h; sourceTree = "<group>"; };
-		D457F140210674FF00711CBD /* SaveState.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SaveState.c; sourceTree = "<group>"; };
+		D495724821249D940079E744 /* fileIO.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = fileIO.c; path = "/Users/Skyler/LASP Research/NBodyVortexSim/NBodySim/fileIO.c"; sourceTree = "<absolute>"; };
+		D495724921249D940079E744 /* fileIO.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fileIO.h; path = "/Users/Skyler/LASP Research/NBodyVortexSim/NBodySim/fileIO.h"; sourceTree = "<absolute>"; };
 		D4A383F221011F14009D21FF /* libpthread.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libpthread.tbd; path = usr/lib/libpthread.tbd; sourceTree = SDKROOT; };
 		D4B45D24210800B10058410B /* RNG.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNG.h; sourceTree = "<group>"; };
 		D4B45D25210800B10058410B /* RNG.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = RNG.c; sourceTree = "<group>"; };
@@ -182,8 +182,8 @@
 				D4CCD20520EBB2480059D986 /* main.c */,
 				D4B45D24210800B10058410B /* RNG.h */,
 				D4B45D25210800B10058410B /* RNG.c */,
-				D457F13F210674FF00711CBD /* SaveState.h */,
-				D457F140210674FF00711CBD /* SaveState.c */,
+				D495724821249D940079E744 /* fileIO.c */,
+				D495724921249D940079E744 /* fileIO.h */,
 				D41DAF092102A2F40076F0EF /* TestCaseInitializers.h */,
 				D41DAF0A2102A2F40076F0EF /* TestCaseInitializers.c */,
 				D4CCD20620EBB2480059D986 /* guiOutput.h */,
@@ -322,11 +322,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				D4C9C148210BCA4E00229D3A /* thpool.c in Sources */,
-				D457F141210674FF00711CBD /* SaveState.c in Sources */,
 				D4CCD22120EBB32E0059D986 /* guiOutput.c in Sources */,
 				D4CCD22020EBB2C20059D986 /* main.c in Sources */,
 				D4B45D26210800B10058410B /* RNG.c in Sources */,
 				D41DAF0B2102A2F40076F0EF /* TestCaseInitializers.c in Sources */,
+				D495724A21249D940079E744 /* fileIO.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

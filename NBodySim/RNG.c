@@ -13,16 +13,16 @@
 
 /*
  this is a linear congruential pseudo random number generator. Obligatory wiki link: https://en.wikipedia.org/wiki/Linear_congruential_generator
- mod, c and a values taken from MMIX's LCG implementation
+ values for mod, c and a taken from C++11's minstd_rand0
  */
-const long mod = LONG_MAX;
-const long c = 6364136223846793005;
-const long a = 1442695040888963407;
+const long mod = 2147483647; // 2^31 - 1
+const long c = 0;
+const long a = 16807;
 long lastX;
 
 long randVal() {
 	lastX = (a * lastX + c) % mod;
-	return (lastX & mod);
+	return (unsigned int)(lastX & mod);
 }
 
 /**

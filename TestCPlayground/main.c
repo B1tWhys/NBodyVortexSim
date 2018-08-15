@@ -14,7 +14,7 @@
 
 void testF(int *arrPtr[]) {
 	for (int i = 0; i < 5; i++) {
-		*arrPtr[i] = i;
+		(*arrPtr)[i] = i;
 	}
 }
 

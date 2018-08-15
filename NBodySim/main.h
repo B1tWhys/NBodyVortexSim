@@ -9,6 +9,8 @@
 
 #include <pthread.h>
 
+extern int currentTimestep;
+
 struct Vortex {
 	int vIndex;
 	int initStep;
