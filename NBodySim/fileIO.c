@@ -85,6 +85,50 @@ void closeFile() {
 	fclose(file);
 }
 
+/**
+ binary search for the beginning of the target timestep
+ */
+long findTimeStep(FILE *f, int target, long lowPos, long highPos) {
+	printf("searching in %li-%li\n", lowPos, highPos);
+	char strbuff[100];
+	long domainWidth = highPos - lowPos;
+	fseek(f, lowPos + domainWidth/2, SEEK_SET);
+	
+	while (strbuff[0] != 0x1D) {
+		*strbuff = (char)fgetc(f);
+		// if our entire domain is *inside* of the last timestep (and doesn't include that timestep's record sep.) then
+		// we will run out of file b4 we find the TS header. If this happens, then we should seek back in the file by the
+		// width of our search domain, then search from there. This searches the other half of the parent's domain.
+		if (*strbuff == -1) {
+			if (!fseek(f, lowPos - highPos, SEEK_CUR)) {
+				exit(EXIT_FAILURE); // seek failed.
+			}
+		}
+	}
+	*strbuff = 0;
+	long tsStartLoc = ftell(f);
+	
+	for (int i = 0; 1; i++) {
+		char nextChar = fgetc(f);
+		if (nextChar != ',' && nextChar != '\n') {
+			strbuff[i] = nextChar;
+		} else {
+			break;
+		}
+	}
+	
+	int tsNum = atoi(strbuff);
+//	printf("center search val: %s\n", strbuff);
+
+	if (tsNum == target) {
+		return tsStartLoc;
+	} else if (tsNum > target) {
+		return findTimeStep(f, target, lowPos, highPos - domainWidth/2);
+	} else {
+		return findTimeStep(f, target, lowPos + domainWidth/2, highPos);
+	}
+}
+
 // write 0's into strbuff. This assumes strbuff is 100 chars long.
 #define clearStrBuff for (int i = 0; i < 100; i++) strbuff[i] = 0
 
@@ -98,20 +142,16 @@ strbuff[i] = nextChar;\
 break;\
 }\
 }
-
 void initFromFile(char *fName, int loadIndex, struct Vortex *vortices[], int *numDriverVorts, int *vortsAllocated, struct Tracer *tracers[]) {
 	FILE *sourceF = fopen(fName, "r");
 	char strbuff[100]; // if a number in the file exceeds 100 characters in length, this will overflow
 	clearStrBuff;
 	
-	// loop through timesteps until we are at the timestep to load from
-	for (int tsIndex = 0; tsIndex <= loadIndex; tsIndex++) {
-		while (strbuff[0] != 0x1D) { // loop until we reach the beginning of the next timestep
-			strbuff[0] = (char)fgetc(sourceF);
-			assert(strbuff[0] != -1); // we reached EOF before reaching the designated timestep
-		}
-		strbuff[0] = 0;
-	}
+	fseek(sourceF, 0L, SEEK_END);
+	long fLen = ftell(sourceF);
+	fseek(sourceF, fLen/2, SEEK_SET);
+	long timestepStart = findTimeStep(sourceF, loadIndex, 0L, fLen);
+	fseek(sourceF, timestepStart, SEEK_SET);
 	
 	readNextCSV;
 	assert(loadIndex == atoi(strbuff)); // check that we are at the correct timestep in the file
@@ -119,7 +159,7 @@ void initFromFile(char *fName, int loadIndex, struct Vortex *vortices[], int *nu
 	
 	// handle (or don't handle) time
 //	clearStrBuff;
-//	readNextCSV;
+	readNextCSV;
 //	*time = atof(strbuff);
 	
 	clearStrBuff;
@@ -195,4 +235,6 @@ void initFromFile(char *fName, int loadIndex, struct Vortex *vortices[], int *nu
 	}
 	
 	assert(fgetc(sourceF) == 0x1D); // make sure that's the last of the tracers for that timestep.
+	fclose(sourceF);
+	printf("file read finished\n");
 }

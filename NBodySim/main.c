@@ -1058,6 +1058,9 @@ int main(int argc, const char * argv[]) {
 	
 	initializeSimulation(&vortices, &numDriverVorts, &vortexRadii, &tracers, &tracerRadii, &vorticesAllocated);
 	
+	struct timespec initFinishedTime;
+	clock_gettime(CLOCK_MONOTONIC, &initFinishedTime);
+	
 #if TEST_CASE == 4
 	double currentTime = 0;
 #endif
@@ -1135,6 +1138,11 @@ int main(int argc, const char * argv[]) {
 		fflush(stdout);
 		currentTimestep++;
 	}
+	
+	struct timespec simFinishedTime;
+	clock_gettime(CLOCK_MONOTONIC, &simFinishedTime);
+	double sec = (simFinishedTime.tv_sec - initFinishedTime.tv_sec) + (double)(simFinishedTime.tv_nsec - initFinishedTime.tv_nsec) / 1E9;
+	printf("Total simulation runtime: %f\n", sec);
 	
 	
 	for (int vortIndex = 0; vortIndex < numDriverVorts; vortIndex++) {

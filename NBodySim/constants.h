@@ -29,11 +29,11 @@
 // render mode selection
 // #define DRAW_CONSOLE
 //#define DRAW_PDF
-#define SAVE_RAWDATA
+//#define SAVE_RAWDATA
 
 //#define DATA_OUT_FILEPATH "./rawData"
-//#define INITFNAME "./rawData"
-//#define INIT_TIME_STEP 1000
+#define INITFNAME "./rawData"
+#define INIT_TIME_STEP 500
 
 #define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
