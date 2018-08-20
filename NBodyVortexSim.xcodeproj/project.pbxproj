@@ -311,7 +311,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rm -f \"/Users/Skyler/LASP Research/NBodyVortexSim/NBodySim/data/rawData\"\n";
+			shellScript = "# rm -f \"/Users/Skyler/LASP Research/NBodyVortexSim/NBodySim/data/rawData\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

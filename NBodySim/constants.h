@@ -26,14 +26,14 @@
 #define CONSOLE_H 100
 #endif
 
-// render mode selection
+// output type(s) selection -- uncomment the ones you want
 // #define DRAW_CONSOLE
 //#define DRAW_PDF
 //#define SAVE_RAWDATA
 
 //#define DATA_OUT_FILEPATH "./rawData"
-#define INITFNAME "./rawData"
-#define INIT_TIME_STEP 500
+#define INITFNAME "./scaleTestingDataFiles/128x128_first1500"
+#define INIT_TIME_STEP 0
 
 #define IMAGE_W 1000 // size of output frames
 #define IMAGE_H 1000
@@ -41,25 +41,26 @@
 #define TRACER_DRAW_SIZE_CONST 1
 
 #if !(defined(DOMAIN_SIZE_X) || defined(DOMAIN_SIZE_Y))
-#define DOMAIN_SIZE_X 64 // size of one box of the simulation in units
-#define DOMAIN_SIZE_Y 64
+//#define DOMAIN_SIZE_X 128 // size of one box of the simulation in units
+extern double DOMAIN_SIZE_X;
+#define DOMAIN_SIZE_Y 128
 #endif
 
 #define TIMESTEP_CONST .01
 #define RENDER_NTH_STEP 5 // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS
-#define NUMBER_OF_STEPS 2 // number of time steps to simulate. 0 to loop forever
+#define NUMBER_OF_STEPS 500// number of time steps to simulate. 0 to loop forever
 #endif
 
 #define NUM_TRACERS 1 // NOTE: must be a square number
-#define NUM_VORT_INIT 64
-#define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
+#define NUM_VORT_INIT (pow(DOMAIN_SIZE_X,2)/pow(64,2))*64
+#define FIRST_SEED 123 // seed the sim. -1 to use current unix time stamp
 
 #define VORTEX_LIFECYCLE
 #define VORTEX_INTENSITY_SIGMA 0.21233045007200477 * 2 * M_PI
-#define VORTEX_SPAWN_RATE 2.56
+#define VORTEX_SPAWN_RATE (pow(DOMAIN_SIZE_X,2)/pow(64,2))*2.56
 #define VORTEX_MERGE_RADIUS 1
 
-#define THREADCOUNT 8
+#define THREADCOUNT 12
 
 #endif

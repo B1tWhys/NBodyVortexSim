@@ -41,6 +41,7 @@ threadpool thpool;
  @return Index of the radius value
  */
 long calculateVortexRadiiIndex(long vortIndex1, long vortIndex2) {
+	assert(vortIndex1 != vortIndex2);
 	// radii is basically a hash table, with this as the hash function.
 	// I suspect that this is better than the standard dictionary libraries for this problem.
 	// I'm able to guarentee that the structure is full, that there are no
@@ -85,7 +86,7 @@ long calculateTracerRadiiIndex(long tracerIndex, long vortIndex) {
 void updateRadii_pythagorean(double *vortexRadii, struct Vortex *vortices, double *tracerRadii, struct Tracer *tracers, int numTracers) {
 	long index;
 
-	for (int i = 0; i < numDriverVorts; ++i) { // if this doesn't segfault it'll be a goddamn miracle
+	for (int i = 0; i < numDriverVorts; ++i) {
 		for (int j = 0; j < i; ++j) {
 			index = calculateVortexRadiiIndex(vortices[i].vIndex, vortices[j].vIndex);
 
@@ -94,6 +95,7 @@ void updateRadii_pythagorean(double *vortexRadii, struct Vortex *vortices, doubl
 			vortexRadii[index] = sqrt(pow(vortexRadii[index+1], 2.) + pow(vortexRadii[index+2], 2.));
 		}
 	}
+	
 	index = 0;
 	for (int tracerIndex = 0; tracerIndex < numTracers; tracerIndex++) {
 		struct Tracer *tracer = &tracers[tracerIndex];
@@ -662,7 +664,7 @@ void deleteVortex(struct Vortex *vort, double *vortexRads, struct Vortex *vorts,
 		sourcePtr = &vortexRads[calculateVortexRadiiIndex(0, rowIndex+1)];
 		memmove(destPtr, sourcePtr, deletionIndex * sizeof(double) * 3);
 		
-		if (rowIndex == numDriverVorts-2)
+		if (rowIndex == deletionIndex) continue;
 		// shift radii up and left if they are after the column being deleted
 		destPtr = &vortexRads[calculateVortexRadiiIndex(deletionIndex, rowIndex)];
 		sourcePtr = &vortexRads[calculateVortexRadiiIndex(deletionIndex + 1, rowIndex+1)];
@@ -986,7 +988,7 @@ void termination_handler(int sig) {
 	raise(sig);
 }
 
-void initializeSimulation(struct Vortex *vortices[], int *numDriverVorts, double *vortexRadii[], struct Tracer *tracers[], double *tracerRadii[], int *vorticesAllocated) {
+void initializeSimulation(struct Vortex **vortices, int *numDriverVorts, double *vortexRadii[], struct Tracer *tracers[], double *tracerRadii[], int *vorticesAllocated, char filename[]) {
 	// setup sigterm handlers
 	signal(SIGTERM, termination_handler);
 	signal(SIGINT, termination_handler);
@@ -997,13 +999,14 @@ void initializeSimulation(struct Vortex *vortices[], int *numDriverVorts, double
 	
 	// if we are initializing from a file, then everything is read and allocated in initFromFile
 #if defined(INITFNAME) && defined(INIT_TIME_STEP) && TEST_CASE == 0
-	initFromFile(INITFNAME, INIT_TIME_STEP, vortices, numDriverVorts, vorticesAllocated, tracers);
+	printf("initializing from file\n");
+	initFromFile(filename, INIT_TIME_STEP, vortices, numDriverVorts, vorticesAllocated, tracers);
 #else
+	printf("initializing from scratch\n");
 	// seed the RNG
 	if (FIRST_SEED == -1) {
 		currentTimestep = 0;
 		time((time_t *)&lastX);
-		
 		printf("First random seed is %li\n", lastX);
 	} else {
 		lastX = FIRST_SEED;
@@ -1032,31 +1035,29 @@ void initializeSimulation(struct Vortex *vortices[], int *numDriverVorts, double
 		}
 	}
 #endif
-	
 	unsigned long vortexRadiiSize = sizeof(double) * (calculateVortexRadiiIndex(*vorticesAllocated-1, *vorticesAllocated-2) + 3);
-	
 	// vortexRadii is the matrix of distances between vortices. The distance between vortex vIndex==a and vortex vIndex==b (where a < b) is at index 3*(a*(a+1)/2+b).
 	// the next item in the array is the x-component of the distance, and then the y-component of the distance
 	// r, r_x, r_y
-	
 	*vortexRadii = malloc(vortexRadiiSize);
 	
 	long tracerRadSize = NUM_TRACERS * *vorticesAllocated * sizeof(double) * 3;
-	*tracerRadii = malloc(tracerRadSize); // row = vortex, col = tracer; Note: vortPos - tracerPos
+	*tracerRadii = malloc(tracerRadSize * 1.5); // row = vortex, col = tracer; Note: vortPos - tracerPos
 	
 	updateRadii_pythagorean(*vortexRadii, *vortices, *tracerRadii, *tracers, NUM_TRACERS);
 }
 
+double DOMAIN_SIZE_X;
 #pragma mark - Main
-
 int main(int argc, const char * argv[]) {
+	DOMAIN_SIZE_X = atof(argv[1]);
 	struct Vortex *vortices;
 	struct Tracer *tracers;
 	double *vortexRadii;
 	double *tracerRadii;
 	int vorticesAllocated;
 	
-	initializeSimulation(&vortices, &numDriverVorts, &vortexRadii, &tracers, &tracerRadii, &vorticesAllocated);
+	initializeSimulation(&vortices, &numDriverVorts, &vortexRadii, &tracers, &tracerRadii, &vorticesAllocated, (char *)argv[2]);
 	
 	struct timespec initFinishedTime;
 	clock_gettime(CLOCK_MONOTONIC, &initFinishedTime);
@@ -1143,7 +1144,6 @@ int main(int argc, const char * argv[]) {
 	clock_gettime(CLOCK_MONOTONIC, &simFinishedTime);
 	double sec = (simFinishedTime.tv_sec - initFinishedTime.tv_sec) + (double)(simFinishedTime.tv_nsec - initFinishedTime.tv_nsec) / 1E9;
 	printf("Total simulation runtime: %f\n", sec);
-	
 	
 	for (int vortIndex = 0; vortIndex < numDriverVorts; vortIndex++) {
 		free(vortices[vortIndex].position);

@@ -9,12 +9,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.image as image
 import matplotlib.pyplot as plt
-<<<<<<< HEAD
 # import array
 from collections import deque
-=======
-import array
->>>>>>> f54112e4e2045980373488786de86e2ba57d216c
 import statistics as stats
 import math
 
@@ -45,21 +41,6 @@ class Tracer(PointObj):
     def __init__(self, index, xPos, yPos, xVel, yVel, tVel):
         super(Tracer, self).__init__(xPos, yPos, xVel, yVel, tVel)
         self.index = index
-
-<<<<<<< HEAD
-=======
-# class StretchyList(list):
-#     def __init__(self, defaultValue = 0):
-#         super.__init__([])
-#         self.defaultVal = defaultValue
-# 
-#     def __getitem__(self, index):
-#         if (index < len(self)):
-#             self += [defaultVal] * (index - len(self) + 1)
-#         return super.__getitem__(index)
-
-
->>>>>>> f54112e4e2045980373488786de86e2ba57d216c
 f = open(argv[1], 'r')
 fSize = os.path.getsize(argv[1])
 
@@ -84,16 +65,10 @@ while True:
     line = f.readline().strip()
     strArr = line.split(',')
     ts = Timestep(int(strArr[0]), float(strArr[1]), int(strArr[2]))
-<<<<<<< HEAD
     if (ts.index % 100 == 0):
         print("computing timestep: %i"%ts.index)
 #    if ts.index == 10000:
 #        break;
-=======
-#     print("computing timestep: %i"%ts.index)
-    # if ts.index == 100:
-        # break;
->>>>>>> f54112e4e2045980373488786de86e2ba57d216c
     numV = int(strArr[3])
     numT = int(strArr[4])
     # timesteps.append(ts)
@@ -152,10 +127,7 @@ while True:
     gamma_pos.append(posGammaSum)
     gamma_neg.append(negGammaSum)
     gamma_tot.append(gammaSum)
-<<<<<<< HEAD
 #     print("calculated step %i"%ts.
-=======
->>>>>>> f54112e4e2045980373488786de86e2ba57d216c
 #     print(len([vort.vorticity for vort in ts.vorts if vort.vorticity > .001 and vort.vorticity < .002]))
     
 ########### draw the graphs

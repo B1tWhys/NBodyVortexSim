@@ -34,6 +34,7 @@
  .
  .
  .
+ <GS>
  */
 
 FILE *file;
@@ -92,7 +93,7 @@ long findTimeStep(FILE *f, int target, long lowPos, long highPos) {
 	printf("searching in %li-%li\n", lowPos, highPos);
 	char strbuff[100];
 	long domainWidth = highPos - lowPos;
-	fseek(f, lowPos + domainWidth/2, SEEK_SET);
+	fseek(f, lowPos, SEEK_SET);
 	
 	while (strbuff[0] != 0x1D) {
 		*strbuff = (char)fgetc(f);
