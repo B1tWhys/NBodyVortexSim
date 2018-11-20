@@ -7,9 +7,11 @@
 #ifndef constants_h
 #define constants_h
 
+#include <math.h>
+
 /*
  Test case numbering info:
- 
+
  num:	test case				(val for NUM_VORT_INIT)
  0:		normal mode				(*)
  1:		two co-orbiting vorts	(2)
@@ -19,47 +21,47 @@
  5:		single vort initializer	(1)
  6:		tracer accuracy test	(2)	(1 tracer)
  */
-#define TEST_CASE 0
 
-#if !defined(CONSOLE_H) || !defined(CONSOLE_W)
-#define CONSOLE_W 200 // character dimensions to draw to console
-#define CONSOLE_H 100
-#endif
+extern int TEST_CASE;
 
 // render mode selection
-// #define DRAW_CONSOLE
-//#define DRAW_PDF
-//#define SAVE_RAWDATA
+extern char DRAW_CONSOLE;
+extern char DRAW_PDF;
+extern char SAVE_RAWDATA;
 
-//#define DATA_OUT_FILEPATH "./rawData"
-#define INITFNAME "./rawData"
-#define INIT_TIME_STEP 500
+// file names for the file to initialize the simulation from, and the filepath to
+// write to. To disable initilzing from a source file, set INITFNAME to "".
+extern char DATA_OUT_FILEPATH[255];
+extern char INITFNAME[255];
+extern int INIT_TIME_STEP;
 
-#define IMAGE_W 1000 // size of output frames
-#define IMAGE_H 1000
-#define VORTEX_DRAW_SIZE_CONST 4
-#define TRACER_DRAW_SIZE_CONST 1
+extern int CONSOLE_W; // character dimensions to draw to console
+extern int CONSOLE_H;
 
-#if !(defined(DOMAIN_SIZE_X) || defined(DOMAIN_SIZE_Y))
-#define DOMAIN_SIZE_X 64 // size of one box of the simulation in units
-#define DOMAIN_SIZE_Y 64
-#endif
+extern int IMAGE_W; // size of output frames
+extern int IMAGE_H;
+extern int VORTEX_DRAW_SIZE_CONST;
+extern int TRACER_DRAW_SIZE_CONST;
 
-#define TIMESTEP_CONST .01
-#define RENDER_NTH_STEP 5 // speeds up the simulation display
+extern int DOMAIN_SIZE_X; // size of one box of the simulation in units
+extern int DOMAIN_SIZE_Y;
+
+extern float TIMESTEP_CONST;
+extern int RENDER_NTH_STEP; // speeds up the simulation display
 #ifndef NUMBER_OF_STEPS
-#define NUMBER_OF_STEPS 2 // number of time steps to simulate. 0 to loop forever
+extern int NUMBER_OF_STEPS; // number of time steps to simulate. 0 to loop forever
 #endif
 
-#define NUM_TRACERS 1 // NOTE: must be a square number
-#define NUM_VORT_INIT 64
-#define FIRST_SEED -1 // seed the sim. -1 to use current unix time stamp
+extern int NUM_TRACERS; // NOTE: must be a square number
+extern int NUM_VORT_INIT;
+extern int FIRST_SEED; // seed the sim. -1 to use current unix time stamp
 
-#define VORTEX_LIFECYCLE
-#define VORTEX_INTENSITY_SIGMA 0.21233045007200477 * 2 * M_PI
-#define VORTEX_SPAWN_RATE 2.56
-#define VORTEX_MERGE_RADIUS 1
+extern char VORTEX_LIFECYCLE; // controls whether vortices are merged/spawned
+extern float VORTEX_INTENSITY_SIGMA;
+extern float VORTEX_SPAWN_RATE;
+extern int VORTEX_MERGE_RADIUS;
 
-#define THREADCOUNT 8
+extern int THREADCOUNT;
 
+void importConstants(char *);
 #endif

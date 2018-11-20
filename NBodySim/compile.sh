@@ -13,7 +13,8 @@ fi
 
 echo "Will draw to conole at ${drawWidth}x$drawHeight character resolution"
 
-args="-lm -std=gnu11 -DCONSOLE_W=$drawWidth -DCONSOLE_H=$drawHeight -lpthread"
+#args="-lm -std=gnu11 -DCONSOLE_W=$drawWidth -DCONSOLE_H=$drawHeight -lpthread"
+args="-lm -std=gnu11 -lpthread"
 
 if [ "${mode:-unset}" = "debug" ]; then
 	printf "Compiling debug version.\nTo compile for production, run: 'export mode=prod' then then recompile\n"
@@ -36,7 +37,7 @@ fi
 
 if [ -z "${debug+x}" ]; then debug="false"; fi
 
-command="gcc ./main.c ./guiOutput.c ./TestCaseInitializers.c ./fileIO.c ./RNG.c ./C-Thread-Pool/thpool.c -o ./data/simulator $args"
+command="gcc ./constants.c ./main.c ./guiOutput.c ./TestCaseInitializers.c ./fileIO.c ./RNG.c ./C-Thread-Pool/thpool.c -o ./data/simulator $args"
 echo "Full compilation instruction is: $command"
 eval "$command"
 
