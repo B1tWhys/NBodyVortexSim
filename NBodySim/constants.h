@@ -2,7 +2,11 @@
 //  constants.h
 //  NBodySim
 //
-//
+
+
+// NOTE: these constants can all be set in the config file. There are default
+// values for them in constants.c which are used for any constants which aren't
+// set in the config file
 
 #ifndef constants_h
 #define constants_h
@@ -26,8 +30,9 @@ extern int TEST_CASE;
 
 // render mode selection
 extern char DRAW_CONSOLE;
-extern char DRAW_PDF;
+extern char DRAW_PNG;
 extern char SAVE_RAWDATA;
+extern char SAVE_RK_STEPS; // save each runge-kutta timestep, in addition to every normal timestep
 
 // file names for the file to initialize the simulation from, and the filepath to
 // write to. To disable initilzing from a source file, set INITFNAME to "".
@@ -60,6 +65,8 @@ extern char VORTEX_LIFECYCLE; // controls whether vortices are merged/spawned
 extern float VORTEX_INTENSITY_SIGMA;
 extern float VORTEX_SPAWN_RATE;
 extern int VORTEX_MERGE_RADIUS;
+
+extern int nextVortID;
 
 extern int THREADCOUNT;
 

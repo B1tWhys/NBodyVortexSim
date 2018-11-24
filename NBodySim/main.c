@@ -125,14 +125,14 @@ double velocityFunc(double vortex2Intensity, double radius) {
 const char domains = 8; // 0 to disable wrapping of forces, 8 to enable it.
 /**
   Calculate the x and y components of the velocity of a vortex based on the strengths of the other vortices, and the distance data in the intRads array
-  @param dxdj Pointer to a double which will be updated to reflect the new x-velocity of the vortex
-  @param dydj Pointer to a double which will be updated to reflect the new y-velocity of the vortex
+  @param xVel Pointer to a double which will be updated to reflect the new x-velocity of the vortex
+  @param yVel Pointer to a double which will be updated to reflect the new y-velocity of the vortex
   @param vort Pointer to the vortex to compute velocities for
   @param vortices Pointer to an array of all of the vortices in the system
   @param rads The array containing all of the distance information between vortices as doubles
   @param numRads The length of the rads array
   */
-void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, struct Vortex *vortices, double *rads, long numRads) {
+void calculateVel_vortex(double *xVel, double *yVel, struct Vortex *vort, struct Vortex *vortices, double *rads, long numRads) {
     for (int j = 0; j < numDriverVorts; ++j) {
         if (vort->vIndex == j) {
             continue;
@@ -195,21 +195,21 @@ void calculateDxDj_DyDj_vortex(double *dxdj, double *dydj, struct Vortex *vort, 
             }
 
             double vmag = velocityFunc(vortices[j].intensity, rad); // total velocity magnitude
-            *dxdj +=  (yRad/rad) * vmag;
-            *dydj += (-xRad/rad) * vmag;
+            *xVel +=  (yRad/rad) * vmag;
+            *yVel += (-xRad/rad) * vmag;
         }
     }
 }
 
 /**
   Calculate the x and y components of the velocity of a tracer based on the strengths of the vortices and their distances from the tracer
-  @param dxdj Pointer to a double which will be updated to reflect the new x-velocity of the vortex
-  @param dydj Pointer to a double which will be updated to reflect the new y-velocity of the vortex
+  @param xVel Pointer to a double which will be updated to reflect the new x-velocity of the vortex
+  @param yVel Pointer to a double which will be updated to reflect the new y-velocity of the vortex
   @param tracerIndex index of the tracer to compute velocities for
   @param rads The array containing all of the distance information between tracers and vortices as doubles
   @param numRads The length of the rads array
   */
-void calculateDxDj_DyDj_tracer(double *dxdj, double *dydj, long tracerIndex, double *rads, long numRads, struct Vortex *vortices) {
+void calculateVel_tracer(double *xVel, double *yVel, long tracerIndex, double *rads, long numRads, struct Vortex *vortices) {
     for (int vortIndex = 0; vortIndex < numDriverVorts; vortIndex++) {
         long intRadIndex = calculateTracerRadiiIndex(tracerIndex, vortIndex);
 
@@ -217,52 +217,57 @@ void calculateDxDj_DyDj_tracer(double *dxdj, double *dydj, long tracerIndex, dou
             double rad;
             double xRad = rads[intRadIndex + 1], yRad = rads[intRadIndex + 2];
 
+
+            // if we're computing the effect of a vortex in the inner "driver" domain, then the radius data is already in memory. If
+            // the other vortex is in one of the outter domains, then we need to compute the radius data by adding/subtracting the
+            // domain size from its radius data, then compute the magnitude of the radius vector
             if (domain) {
                 switch (domain) {
                     case 1: {
-                                xRad -= DOMAIN_SIZE_X;
-                                yRad += DOMAIN_SIZE_Y;
-                                break;
-                            } case 2: {
-                                yRad += DOMAIN_SIZE_Y;
-                                break;
-                            } case 3: {
-                                xRad += DOMAIN_SIZE_X;
-                                yRad += DOMAIN_SIZE_Y;
-                                break;
-                            } case 4: {
-                                xRad -= DOMAIN_SIZE_X;
-                                break;
-                            } case 5: {
-                                xRad += DOMAIN_SIZE_X;
-                                break;
-                            } case 6: {
-                                xRad -= DOMAIN_SIZE_X;
-                                yRad -= DOMAIN_SIZE_Y;
-                                break;
-                            } case 7: {
-                                yRad -= DOMAIN_SIZE_Y;
-                                break;
-                            } case 8: {
-                                xRad += DOMAIN_SIZE_X;
-                                yRad -= DOMAIN_SIZE_Y;
-                                break;
-                            } default: {
-                                break;
-                            }
+                        xRad -= DOMAIN_SIZE_X;
+                        yRad += DOMAIN_SIZE_Y;
+                        break;
+                    } case 2: {
+                        yRad += DOMAIN_SIZE_Y;
+                        break;
+                    } case 3: {
+                        xRad += DOMAIN_SIZE_X;
+                        yRad += DOMAIN_SIZE_Y;
+                        break;
+                    } case 4: {
+                        xRad -= DOMAIN_SIZE_X;
+                        break;
+                    } case 5: {
+                        xRad += DOMAIN_SIZE_X;
+                        break;
+                    } case 6: {
+                        xRad -= DOMAIN_SIZE_X;
+                        yRad -= DOMAIN_SIZE_Y;
+                        break;
+                    } case 7: {
+                        yRad -= DOMAIN_SIZE_Y;
+                        break;
+                    } case 8: {
+                        xRad += DOMAIN_SIZE_X;
+                        yRad -= DOMAIN_SIZE_Y;
+                        break;
+                    } default: {
+                        break;
+                    }
                 }
                 rad = sqrt(pow(xRad, 2) + pow(yRad, 2));
             } else {
                 rad = rads[intRadIndex];
             }
 
+            // domain truncation
             if (rad > DOMAIN_SIZE_X || (TEST_CASE == 6 && rad < .1)) {
                 continue;
             }
 
             double vmag = velocityFunc(vortices[vortIndex].intensity, rad);
-            *dxdj +=  (yRad/rad) * vmag;
-            *dydj += (-xRad/rad) * vmag;
+            *xVel +=  (yRad/rad) * vmag;
+            *yVel += (-xRad/rad) * vmag;
         }
     }
 }
@@ -281,12 +286,12 @@ void stepForwardTracerRK4(void *arguments) {
         double k1_y = 0, k2_y = 0, k3_y = 0, k4_y = 0;
 
         struct Tracer *tracer = &tracers[tracerIndex];
-        double dxdj = 0;
-        double dydj = 0;
+        double xVel = 0;
+        double yVel = 0;
 
         long offsetTracerIndex = tracer->tIndex - tracers[0].tIndex;
-        calculateDxDj_DyDj_tracer(&dxdj,
-                &dydj,
+        calculateVel_tracer(&xVel,
+                &yVel,
                 offsetTracerIndex,
                 intermediateTracerRads,
                 (numDriverVorts * numTracers),
@@ -294,30 +299,30 @@ void stepForwardTracerRK4(void *arguments) {
 
         switch (RKStep) {
             case 1: {
-                        k1_x += dxdj;
-                        k1_y += dydj;
+                        k1_x += xVel;
+                        k1_y += yVel;
 
-                        dxdj = dxdj/2;
-                        dydj = dydj/2;
+                        xVel = xVel/2;
+                        yVel = yVel/2;
                         break;
                     }
             case 2: {
-                        k2_x += dxdj;
-                        k2_y += dydj;
+                        k2_x += xVel;
+                        k2_y += yVel;
 
-                        dxdj = dxdj/2;
-                        dydj = dydj/2;
+                        xVel = xVel/2;
+                        yVel = yVel/2;
                         break;
                     }
             case 3: {
-                        k3_x += dxdj;
-                        k3_y += dydj;
+                        k3_x += xVel;
+                        k3_y += yVel;
 
                         break;
                     }
             case 4: {
-                        k4_x += dxdj;
-                        k4_y += dydj;
+                        k4_x += xVel;
+                        k4_y += yVel;
                         break;
                     }
             default: {
@@ -355,8 +360,8 @@ void stepForwardTracerRK4(void *arguments) {
 
         for (int vortexIndex = 0; vortexIndex < numDriverVorts; ++vortexIndex) {
             long radIndex = calculateTracerRadiiIndex(offsetTracerIndex, vortexIndex);
-            intermediateTracerRads[radIndex + 1] = tracerRadii[radIndex + 1] - dxdj * timestep;
-            intermediateTracerRads[radIndex + 2] = tracerRadii[radIndex + 2] - dydj * timestep;
+            intermediateTracerRads[radIndex + 1] = tracerRadii[radIndex + 1] - xVel * timestep;
+            intermediateTracerRads[radIndex + 2] = tracerRadii[radIndex + 2] - yVel * timestep;
 
             // pythagorean.
             intermediateTracerRads[radIndex] = sqrt(pow(intermediateTracerRads[radIndex+1], 2) + pow(intermediateTracerRads[radIndex+2], 2));
@@ -386,36 +391,36 @@ void stepForwardVortexRK4(void *arguments) {
     struct Vortex *vort = &vortices[originVortIndex];
     int vortIndex = vort->vIndex;
 
-    double dxdj = 0;
-    double dydj = 0;
+    double xVel = 0;
+    double yVel = 0;
 
-    calculateDxDj_DyDj_vortex(&dxdj, &dydj, vort, vortices, intermediateRadii, vortRadLen);
+    calculateVel_vortex(&xVel, &yVel, vort, vortices, intermediateRadii, vortRadLen);
 
     switch (RKStep) {
         case 1: {
-                    k1_x = dxdj;
-                    k1_y = dydj;
+                    k1_x = xVel;
+                    k1_y = yVel;
 
-                    dxdj = dxdj/2.;
-                    dydj = dydj/2.;
+                    xVel = xVel/2.;
+                    yVel = yVel/2.;
                     break;
                 }
         case 2: {
-                    k2_x = dxdj;
-                    k2_y = dydj;
+                    k2_x = xVel;
+                    k2_y = yVel;
 
-                    dxdj = dxdj/2.;
-                    dydj = dydj/2.;
+                    xVel = xVel/2.;
+                    yVel = yVel/2.;
                     break;
                 }
         case 3: {
-                    k3_x = dxdj;
-                    k3_y = dydj;
+                    k3_x = xVel;
+                    k3_y = yVel;
                     break;
                 }
         case 4: {
-                    k4_x = dxdj;
-                    k4_y = dydj;
+                    k4_x = xVel;
+                    k4_y = yVel;
                     break;
                 }
         default: {
@@ -460,7 +465,6 @@ void stepForwardVortexRK4(void *arguments) {
 
         long radiiIndex = calculateVortexRadiiIndex(vortIndex, vortices[j].vIndex);
 
-
         // if (vortIndex != vortices[j].otherVort) {
         // vort->otherVort++;
         // }
@@ -474,14 +478,13 @@ void stepForwardVortexRK4(void *arguments) {
         __atomic_load(&workingRadii[radiiIndex + 1], &oldXRad, __ATOMIC_SEQ_CST);
         double newXRad;
         do {
-            newXRad = addVals ? oldXRad + dxdj*timestep : oldXRad - dxdj*timestep;
+            newXRad = addVals ? oldXRad + xVel*timestep : oldXRad - xVel*timestep;
         } while (!__atomic_compare_exchange(&workingRadii[radiiIndex + 1], &oldXRad, &newXRad, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
-
 
         __atomic_load(&workingRadii[radiiIndex + 2], &oldYRad, __ATOMIC_SEQ_CST);
         double newYRad;
         do {
-            newYRad = addVals ? oldYRad + dxdj*timestep : oldYRad - dxdj*timestep;
+            newYRad = addVals ? oldYRad + xVel*timestep : oldYRad - xVel*timestep;
         } while (!__atomic_compare_exchange(&workingRadii[radiiIndex + 2], &oldYRad, &newYRad, 1, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST));
 
         __atomic_thread_fence(__ATOMIC_SEQ_CST); // not sure if this is neccessary
@@ -498,8 +501,8 @@ void stepForwardVortexRK4(void *arguments) {
 
     for (int tracerI = 0; tracerI < numTracers; tracerI++) {
         long index = calculateTracerRadiiIndex(tracerI, originVortIndex);
-        intermediateTracerRads[index + 1] += dxdj*timestep;
-        intermediateTracerRads[index + 2] += dydj*timestep;
+        intermediateTracerRads[index + 1] += xVel*timestep;
+        intermediateTracerRads[index + 2] += yVel*timestep;
         intermediateTracerRads[index] = sqrt(pow(intermediateTracerRads[index + 1], 2) + pow(intermediateTracerRads[index + 2], 2));
     }
 
@@ -518,17 +521,13 @@ void stepForwardVortexRK4(void *arguments) {
   @param numTracers The numebr of tracers
   */
 void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerRadii, struct Tracer *tracers, int numTracers) {
-    /*
-       There may be some duplicate computation being done here.     ୧(ಠ Д ಠ)୨
-       */
-
     int sizeOfRadEntry = sizeof(double) * 3;
     long vortRadLen = (pow(numDriverVorts, 2)-numDriverVorts)/2;
     long vortRadSize = vortRadLen * sizeOfRadEntry;
 
     /*
-       workingRadii is updated after every vortex is updated in position, and should not be directly used to compute vortex velocities
-       intermediateRadii is updated after every runge-kutta step. At the end of the step, workingRadii is coppied into intermediateRadii.
+       workingRadii is updated after every vortex is updated in position once per timestep, and should not be directly used to compute vortex velocities
+       intermediateRadii is updated after every runge-kutta step. At the end of the step, intermediateRadii is coppied into workingRadii
        intermediateRadii should be used to compute the velocities of each particle.
        */
 
@@ -544,6 +543,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
     double *intermediateTracerRads = malloc(tracerRadSize);
     memcpy(intermediateTracerRads, tracerRadii, tracerRadSize);
 
+    // zero out the velocities for all the vortices and tracers
     for (int i = 0; i < numDriverVorts; i++) {
         struct Vortex *vort = &vortices[i];
         vort->velocity[0] = 0;
@@ -557,8 +557,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
     }
 
     for (int RKStep = 1; RKStep <= 4; RKStep++) {
-
-        //		double dxdj = 0, dydj = 0;
+        //		double xVel = 0, yVel = 0;
 
         // tracer multithreading
         int tracersPerThread = NUM_TRACERS/THREADCOUNT;
@@ -576,6 +575,8 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
                     tracersPerThread += NUM_TRACERS%THREADCOUNT;
                 }
 
+                // you can only pass 1 parameter to a function being run by another thread. To get around this, you create a struct with all the information
+                // you want to pass, then just pass a pointer to that struct as the 1 parameter to the function. 
                 struct TracerArgs *args = malloc(sizeof(struct TracerArgs));
                 args->RKStep = RKStep;
                 args->tracers = tracerArrayPiece;
@@ -589,7 +590,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 
             thpool_wait(thpool);
 
-        } else { // just run on the main thread to make debugging easier
+        } else { // just run on the main thread to make debugging easier if there's only 1 thread
             struct TracerArgs *args = malloc(sizeof(struct TracerArgs));
             args->RKStep = RKStep;
             args->tracers = tracers;
@@ -616,7 +617,6 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
 
             thpool_add_work(thpool, stepForwardVortexRK4, args);
         }
-
 
         thpool_wait(thpool);
 
@@ -691,7 +691,14 @@ void deleteVortex(struct Vortex *vort, double *vortexRads, struct Vortex *vorts,
     for (int i = deletionIndex; i < numDriverVorts; i++) vorts[i].vIndex--;
 }
 
+int nextVortID = 0;
+/**
+ Randomize the position and intensity of a vortex, and also give it a new vID. This is the same as deleting the vortex
+ then initializing a new one, however it doesn't require an O(n) (where n is the total number of vortices being simulated)
+ deletion from the array of vortices.
+ */
 void randomizeVortex(struct Vortex *vort) {
+    vort->vID = nextVortID++;
     vort->position[0] = generateUniformRandInRange(0, DOMAIN_SIZE_X);
     vort->position[1] = generateUniformRandInRange(0, DOMAIN_SIZE_Y);
 
@@ -717,7 +724,6 @@ double mergeIntensities(double int1, double int2) {
     double newInt = sqrt(fabs(sign1 * pow(int1, 2) + sign2 * pow(int2, 2)));
     return (int1 + int2 > 0) ? newInt : -newInt;
 }
-
 
 /**
   @note this will increment numDriverVorts. It is not neccessary to incrememnt numDriverVorts before/after this function runs
@@ -1050,6 +1056,13 @@ void initializeSimulation(struct Vortex *vortices[], int *numDriverVorts, double
     *tracerRadii = malloc(tracerRadSize); // row = vortex, col = tracer; Note: vortPos - tracerPos
 
     updateRadii_pythagorean(*vortexRadii, *vortices, *tracerRadii, *tracers, NUM_TRACERS);
+    
+    // set nextVortID to be one more than the highest vortex ID.
+    for (int i = 0; i < *numDriverVorts; i++) {
+        if ((*vortices[i]).vID >= nextVortID) {
+            nextVortID = (*vortices[i]).vID;
+        }
+    }
 }
 
 #pragma mark - Main
@@ -1061,12 +1074,17 @@ int main(int argc, const char * argv[]) {
     double *tracerRadii;
     int vorticesAllocated;
 
-    importConstants("./config");
+    // load values for constants from the config file
+    importConstants("./config"); 
+    // initialize the vortices and drivers. Either write zeros into the arrays, or read data from the
+    // input file into the simulation. 
     initializeSimulation(&vortices, &numDriverVorts, &vortexRadii, &tracers, &tracerRadii, &vorticesAllocated);
 
     struct timespec initFinishedTime;
     clock_gettime(CLOCK_MONOTONIC, &initFinishedTime);
 
+    // only used to verify that the simulation matches the analytic solution to test case #4
+    // not really useful for anything else
     double currentTime;
     if (TEST_CASE == 4) currentTime = 0;
 
@@ -1076,6 +1094,8 @@ int main(int argc, const char * argv[]) {
         struct timespec startTime;
         struct timespec endTime;
 
+        // if DRAW_CONSOLE is true, then the simulation draws an asii representation of the vortices
+        // and tracers to the console. This is sometimes useful for debugging.
         if (DRAW_CONSOLE) {
             if (currentTimestep%RENDER_NTH_STEP == 0) {
                 drawToConsole(vortices, numDriverVorts, tracers);
@@ -1089,7 +1109,8 @@ int main(int argc, const char * argv[]) {
             }
         }
 
-        if (DRAW_PDF) {
+        // if DRAW_PNG is true then we save pdf images (which can be assembled into video)
+        if (DRAW_PNG) {
             if (currentTimestep%RENDER_NTH_STEP == 0) {
                 char *filename = malloc(sizeof(char) * 50);
                 genFName(filename, currentTimestep);
@@ -1101,7 +1122,7 @@ int main(int argc, const char * argv[]) {
             }
         }
 
-        // adjust the timestep based on minRad and maxVel for test case 4
+        // generate parameters used to verify that this simulator matches the analytic solution for test case 4
         if (TEST_CASE == 4) {
             double minR = minRad(vortexRadii, numDriverVorts);
             double maxV = maxVelocity(vortices);
@@ -1113,6 +1134,7 @@ int main(int argc, const char * argv[]) {
         }
         clock_gettime(CLOCK_MONOTONIC, &startTime);
 
+        // merge and spawn vortices
         if (VORTEX_LIFECYCLE) {
             int numSpawns = calcSpawnCount();
             printf("spawning %i vorts\n", numSpawns);
@@ -1124,14 +1146,19 @@ int main(int argc, const char * argv[]) {
             printf("timestep: %i, time: %.5f, totMerges: %i\n", currentTimestep, currentTimestep * timestep, totalMergeCount);
         }
 
+        // compute the new positions of tracers and vortices using runge-kutta 4th order
         stepForward_RK4(vortices, vortexRadii, tracerRadii, tracers, NUM_TRACERS);
+        // find vortices which have moved out of the domain, then move them to their new positions
         wrapPositions(vortices, tracers, NUM_TRACERS);
-        updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS); // needs optimization. Repeat ops from stepForward_RK4
+        // after warping, the radii arrays may not be correct, so I recalculate them. Since this only happens once per
+        // time step, this computation takes a negligable amount of time.
+        updateRadii_pythagorean(vortexRadii, vortices, tracerRadii, tracers, NUM_TRACERS);
 
         clock_gettime(CLOCK_MONOTONIC, &endTime);
         double sec = (endTime.tv_sec - startTime.tv_sec) + (double)(endTime.tv_nsec - startTime.tv_nsec) / 1E9;
         printf("Step number %i calculation complete in %f sec with %i vortices\n", currentTimestep, sec, numDriverVorts);
 
+        // if SAVE_RAWDATA, then we save the position once per timestep
         if (SAVE_RAWDATA) {
             if (currentTimestep == 0) openFile();
             saveState(currentTimestep, lastX, numDriverVorts, NUM_TRACERS, vortices,tracers);

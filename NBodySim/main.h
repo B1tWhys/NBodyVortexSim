@@ -12,6 +12,7 @@
 extern int currentTimestep;
 
 struct Vortex {
+    long vID; // unique vortex ID
 	int vIndex;
 	int initStep;
 	

@@ -11,7 +11,7 @@
 // default values for all of the constants prior to being set from the config file
 int TEST_CASE = 0;
 char DRAW_CONSOLE = 0;
-char DRAW_PDF = 0;
+char DRAW_PNG = 0;
 char SAVE_RAWDATA = 0;
 char DATA_OUT_FILEPATH[255] = "";
 char INITFNAME[255] = "";
@@ -76,8 +76,8 @@ void importConstants(char *filename) {
             TEST_CASE = strtol(value, NULL, 10);
         } else if (strcmp(keyword, "DRAW_CONSOLE") == 0) {
             DRAW_CONSOLE = 1;
-        } else if (strcmp(keyword, "DRAW_PDF") == 0) {
-            DRAW_PDF = 1;
+        } else if (strcmp(keyword, "DRAW_PNG") == 0) {
+            DRAW_PNG = 1;
         } else if (strcmp(keyword, "SAVE_RAWDATA") == 0) {
             SAVE_RAWDATA = 1;
         } else if (strcmp(keyword, "DATA_OUT_FILEPATH") == 0) {
