@@ -22,14 +22,34 @@
  Each timestep starts with a GS, followed by either "RK" or "TS" to distinguish between
  TimeSteps and RungeKutta steps.
 
- After the timestep metadata line, there is one line per vortex (each containing the comma
- seperated data for that vortex). 
- 
- After the metadata line is the vortex data. Each data section starts with a RS. Each following line (carriage
- return delimited) contains the data for a vortex (details below). If the file contains runge-kutta
- steps, 4 RK steps follow the timestep line.
+ After the metadata line is the vortex data for that complete timestep. Each data section 
+ starts with a RS. Each following line (carriage return delimited) contains the data for a
+ vortex (details below). If the file contains runge-kutta steps, 4 RK steps follow the timestep line.
 
  Vortex data is succeeded by tracer data, which is in a similar format.
+
+ Tracer data is followed optionally by 4 runge-kutta steps. Each RK step starts with RK, and is followed by
+ a 2D array of data in python syntax. This means that the data can be parsed into arrays just by running the
+ python exec() function on the array. Each 3D array is an array of 4 time steps, each timestep consisting of
+ a dictionary where the keys are vIDs, and the values are arrays of x-y positions. Maybe this will make
+ things more clear:
+
+[
+    # RK step 1
+    {
+        1: [xPosition, yPosition], # data for vortID = 1
+        2: [xPosition, yPosition], # data for vortID = 2
+        ...
+    },
+    # RK step 2
+    {
+        1: [xPosition, yPosition], # data for vortID = 1
+        2: [xPosition, yPosition], # data for vortID = 2
+        ...
+    },
+    ... # RK step 3 & 4
+]
+
  
  Details:
 
@@ -99,38 +119,36 @@ void saveState(int timestep, long currentSeed, int numVorts, int numTracers, str
 	fflush(file);
 }
 
-// void saveRKState(int RKStep, int timestep, long currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
-	// assert(fprintf(file, "\x1D%i,%li,%i,%i\n", timestep, currentSeed, numVorts, numTracers) >= 0);
-	// fputc(0x1E, file);
-	// for (int i = 0; i < numVorts; i++) {
-		// struct Vortex *vort = &vorts[i];
-        // double xPos = vort->position[0] + vort->velocity[0] * timestep;
-		// assert(fprintf(file,
-				// "RK:%li,%.15f,%.15f,%.15f,%.15f,%.15f,%i\n",
-				// vort->vID,
-				// vort->position[0],
-				// vort->position[1],
-				// vort->velocity[0],
-				// vort->velocity[1],
-				// vort->intensity,
-				// vort->initStep) >= 0);
-	// }
-	// fputc(0x1E, file);
-	
-	// for (int i = 0; i < numTracers; i++) {
-		// struct Tracer *tracer = &tracers[i];
-		// assert(fprintf(file,
-				// "%i,%.15f,%.15f,%.15f,%.15f\n",
-				// tracer->tIndex,
-				// tracer->position[0],
-				// tracer->position[1],
-				// tracer->velocity[0],
-				// tracer->velocity[1]) >= 0);
-	// }
-	
-	// // fputc(29, file);
-	// fflush(file);
-// }
+void saveIntermediateVortPositions(int numVorts, struct RKPositions *positions) {
+    fprintf(file, "[");
+    for (int RKStep = 1; RKStep <= 4; ++RKStep) {
+        fprintf(file, "{");
+        for (int i = 0; i < numVorts; ++i) {
+            double x, y;
+            switch(RKStep) {
+                case 1:
+                    x = positions->step1Pos.x;
+                    y = positions->step1Pos.y;
+                    break;
+                case 2:
+                    x = positions->step2Pos.x;
+                    y = positions->step2Pos.y;
+                    break;
+                case 3:
+                    x = positions->step3Pos.x;
+                    y = positions->step3Pos.y;
+                    break;
+                case 4:
+                    x = positions->step4Pos.x;
+                    y = positions->step4Pos.y;
+                    break;
+            }
+            fprintf(file, "%ld: [%lf, %lf],", positions->vort->vID, x, y);
+        }
+        fprintf(file, "}");
+    }
+    fprintf(file, "]");
+}
 
 void saveState_binary(int timestep, double currentTime, unsigned int currentSeed, int numVorts, int numTracers, struct Vortex *vorts, struct Tracer *tracers) {
 	assert(fprintf(file, "\x1D%i,%f,%u,%i,%i\n", timestep, currentTime, currentSeed, numVorts, numTracers) >= 0);

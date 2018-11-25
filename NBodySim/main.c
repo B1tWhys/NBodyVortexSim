@@ -374,6 +374,7 @@ void stepForwardTracerRK4(void *arguments) {
     free(arguments);
 }
 
+struct RKPositions *intPositionCache;
 void stepForwardVortexRK4(void *arguments) {
     struct VortexArgs *args = arguments;
     struct Vortex *vortices = args->vortices;
@@ -506,6 +507,33 @@ void stepForwardVortexRK4(void *arguments) {
         intermediateTracerRads[index] = sqrt(pow(intermediateTracerRads[index + 1], 2) + pow(intermediateTracerRads[index + 2], 2));
     }
 
+    if (SAVE_RK_STEPS) {
+        struct Vector pos1;
+        pos1.x = vort->position[0] + k1_x * timestep;
+        pos1.y = vort->position[1] + k1_y * timestep;
+
+        struct Vector pos2;
+        pos1.x = vort->position[0] + k2_x * timestep;
+        pos1.y = vort->position[1] + k2_y * timestep;
+
+        struct Vector pos3;
+        pos1.x = vort->position[0] + k3_x * timestep;
+        pos1.y = vort->position[1] + k3_y * timestep;
+
+        struct Vector pos4;
+        pos1.x = vort->position[0] + k4_x * timestep;
+        pos1.y = vort->position[1] + k4_y * timestep;
+
+        struct RKPositions positions;
+        positions.vort = vort;
+        positions.step1Pos = pos1;
+        positions.step2Pos = pos2;
+        positions.step3Pos = pos3;
+        positions.step4Pos = pos4;
+
+        intPositionCache[vort->vIndex] = positions;
+    }
+
     vort->velocity[0] += (k1_x + k2_x * 2 + k3_x * 2 + k4_x)/6;
     vort->velocity[1] += (k1_y + k2_y * 2 + k3_y * 2 + k4_y)/6;
     free(arguments);
@@ -524,6 +552,7 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
     int sizeOfRadEntry = sizeof(double) * 3;
     long vortRadLen = (pow(numDriverVorts, 2)-numDriverVorts)/2;
     long vortRadSize = vortRadLen * sizeOfRadEntry;
+    intPositionCache = malloc(sizeof(struct RKPositions) * numDriverVorts);
 
     /*
        workingRadii is updated after every vortex is updated in position once per timestep, and should not be directly used to compute vortex velocities
@@ -642,6 +671,10 @@ void stepForward_RK4(struct Vortex *vortices, double *vortRadii, double *tracerR
     free(intermediateRadii);
     free(intermediateTracerRads);
     pthread_mutex_destroy(&radMutex);
+
+    saveIntermediateVortPositions(numDriverVorts, intPositionCache);
+
+    free(intPositionCache);
 }
 
 #pragma mark - Vortex Lifecycle

@@ -21,6 +21,20 @@ struct Vortex {
 	double *velocity; // this is change in coord. per time step
 };
 
+struct Vector {
+    double x;
+    double y;
+    double mag;
+};
+
+struct RKPositions {
+    struct Vortex *vort;
+    struct Vector step1Pos;
+    struct Vector step2Pos;
+    struct Vector step3Pos;
+    struct Vector step4Pos;
+};
+
 struct Tracer {
 	int tIndex;
 	
